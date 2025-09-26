@@ -37,6 +37,15 @@ class _MainScreenState extends State<MainScreen> {
           _selectedIndex == 0 ? Icons.home : Icons.bar_chart,
           size: appBarIconSize,
         ),
+        actions: [
+          IconButton(
+            icon: const Text('⚙️', style: TextStyle(fontSize: 28)),
+            tooltip: 'Paramètres',
+            onPressed: () {
+              // Action à définir
+            },
+          ),
+        ],
       ),
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -63,4 +72,3 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 }
-

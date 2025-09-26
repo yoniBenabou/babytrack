@@ -1,31 +1,40 @@
-/*import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../utils/size_config.dart';
 
 class VitaminCard extends StatelessWidget {
-  final String time;
-  const VitaminCard({required this.time, super.key});
+  final String vitaminDate;
+  final String vitaminTime;
+  final double cardFontSize;
+  final double cardIconSize;
+  const VitaminCard({required this.vitaminDate, required this.vitaminTime, required this.cardFontSize, required this.cardIconSize, super.key});
 
   @override
   Widget build(BuildContext context) {
-    final double cardFontSize = SizeConfig.text(context, 0.055);
-    final double cardIconSize = SizeConfig.icon(context, 0.07);
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(SizeConfig.text(context, 0.04))),
+      color: Colors.indigo.shade50,
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Padding(
-        padding: EdgeInsets.all(SizeConfig.text(context, 0.03)),
-        child: ListTile(
-          leading: CircleAvatar(
-            radius: cardIconSize * 0.7,
-            backgroundColor: Colors.indigo.shade100,
-            child: Icon(Icons.medication, color: Colors.indigo, size: cardIconSize),
-          ),
-          title: Text('Dernière vitamine à $time', style: TextStyle(fontSize: cardFontSize)),
-          contentPadding: EdgeInsets.symmetric(horizontal: SizeConfig.text(context, 0.01)),
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: Colors.indigo.shade200,
+              child: Text('💊', style: TextStyle(fontSize: cardIconSize*0.9)),
+            ),
+            SizedBox(width: SizeConfig.text(context, 0.03)),
+            Expanded(child: Text('Dernière vitamine le $vitaminDate à $vitaminTime', style: TextStyle(fontSize: cardFontSize))),
+            CircleAvatar(
+              backgroundColor: Colors.indigo,
+              child: IconButton(
+                icon: Icon(Icons.add, color: Colors.white, size: cardIconSize*0.9),
+                tooltip: 'Ajouter une vitamine',
+                onPressed: () {},
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
-
-*/

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../utils/size_config.dart';
-
+import '../widgets/bottles_card.dart';
+import '../widgets/poop_card.dart';
+import '../widgets/vitamin_card.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -32,114 +34,24 @@ class HomePage extends StatelessWidget {
                 flex: 4,
                 child: ListView(
                   children: [
-                    // Carte biberons
-                    Card(
-                      color: Colors.blue.shade50,
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  backgroundColor: Colors.blue.shade200,
-                                  child: Text('🍼', style: TextStyle(fontSize: cardIconSize*0.9)),
-                                ),
-                                SizedBox(width: SizeConfig.text(context, 0.025)),
-                                Text('Derniers biberons', style: TextStyle(fontWeight: FontWeight.bold, fontSize: cardFontSize)),
-                                const Spacer(),
-                                CircleAvatar(
-                                  backgroundColor: Colors.blue,
-                                  child: Center(
-                                    child: IconButton(
-                                      icon: Icon(Icons.add, color: Colors.white, size: cardIconSize*0.9),
-                                      tooltip: 'Ajouter un biberon',
-                                      onPressed: () {},
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: SizeConfig.vertical(context, 0.02)),
-                            for (int i = 0; i < bottles.length; i++) ...[
-                              Row(
-                                children: [
-                                  Text('${bottles[i]["date"]} ${bottles[i]["time"]}', style: TextStyle(fontSize: cardFontSize)),
-                                  SizedBox(width: SizeConfig.text(context, 0.04)),
-                                  Text('${bottles[i]["amount"]}ml', style: TextStyle(fontSize: cardFontSize)),
-                                ],
-                              ),
-                              if (i != bottles.length - 1) const Divider(),
-                            ],
-                            SizedBox(height: SizeConfig.vertical(context, 0.02)),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Total journalier :', style: TextStyle(fontSize: cardFontSize, fontWeight: FontWeight.bold)),
-                                Text('520 ml', style: TextStyle(fontSize: cardFontSize, color: Colors.blue)),
-                              ],
-                            )
-                          ],
-                        ),
-                      ),
+                    BottlesCard(
+                      bottles: bottles,
+                      cardFontSize: cardFontSize,
+                      cardIconSize: cardIconSize,
                     ),
                     SizedBox(height: cardSpace),
-                    // Carte caca
-                    Card(
-                      color: Colors.brown.shade50,
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: Colors.brown.shade200,
-                              child: Text('💩', style: TextStyle(fontSize: cardIconSize*0.9)),
-                            ),
-                            SizedBox(width: SizeConfig.text(context, 0.03)),
-                            Expanded(child: Text('Dernier caca le $poopDate à $poopTime', style: TextStyle(fontSize: cardFontSize))),
-                            CircleAvatar(
-                              backgroundColor: Colors.brown,
-                              child: IconButton(
-                                icon: Icon(Icons.add, color: Colors.white, size: cardIconSize*0.9),
-                                tooltip: 'Ajouter un caca',
-                                onPressed: () {},
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    PoopCard(
+                      poopDate: poopDate,
+                      poopTime: poopTime,
+                      cardFontSize: cardFontSize,
+                      cardIconSize: cardIconSize,
                     ),
                     SizedBox(height: cardSpace),
-                    // Carte vitamine
-                    Card(
-                      color: Colors.indigo.shade50,
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: Colors.indigo.shade200,
-                              child: Text('💊', style: TextStyle(fontSize: cardIconSize*0.9)),
-                            ),
-                            SizedBox(width: SizeConfig.text(context, 0.03)),
-                            Expanded(child: Text('Dernière vitamine le $vitaminDate à $vitaminTime', style: TextStyle(fontSize: cardFontSize))),
-                            CircleAvatar(
-                              backgroundColor: Colors.indigo,
-                              child: IconButton(
-                                icon: Icon(Icons.add, color: Colors.white, size: cardIconSize*0.9),
-                                tooltip: 'Ajouter une vitamine',
-                                onPressed: () {},
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    VitaminCard(
+                      vitaminDate: vitaminDate,
+                      vitaminTime: vitaminTime,
+                      cardFontSize: cardFontSize,
+                      cardIconSize: cardIconSize,
                     ),
                   ],
                 ),
@@ -151,4 +63,3 @@ class HomePage extends StatelessWidget {
     );
   }
 }
-
