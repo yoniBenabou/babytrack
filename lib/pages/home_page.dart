@@ -45,7 +45,7 @@ class HomePage extends StatelessWidget {
                               children: [
                                 CircleAvatar(
                                   backgroundColor: Colors.blue.shade200,
-                                  child: Text('🍼', style: TextStyle(fontSize: cardIconSize)),
+                                  child: Text('🍼', style: TextStyle(fontSize: cardIconSize*0.9)),
                                 ),
                                 SizedBox(width: SizeConfig.text(context, 0.025)),
                                 Text('Derniers biberons', style: TextStyle(fontWeight: FontWeight.bold, fontSize: cardFontSize)),
@@ -54,7 +54,7 @@ class HomePage extends StatelessWidget {
                                   backgroundColor: Colors.blue,
                                   child: Center(
                                     child: IconButton(
-                                      icon: Icon(Icons.add, color: Colors.white, size: cardIconSize),
+                                      icon: Icon(Icons.add, color: Colors.white, size: cardIconSize*0.9),
                                       tooltip: 'Ajouter un biberon',
                                       onPressed: () {},
                                     ),
@@ -97,14 +97,14 @@ class HomePage extends StatelessWidget {
                           children: [
                             CircleAvatar(
                               backgroundColor: Colors.brown.shade200,
-                              child: Text('💩', style: TextStyle(fontSize: cardIconSize)),
+                              child: Text('💩', style: TextStyle(fontSize: cardIconSize*0.9)),
                             ),
                             SizedBox(width: SizeConfig.text(context, 0.03)),
                             Expanded(child: Text('Dernier caca le $poopDate à $poopTime', style: TextStyle(fontSize: cardFontSize))),
                             CircleAvatar(
                               backgroundColor: Colors.brown,
                               child: IconButton(
-                                icon: Icon(Icons.add, color: Colors.white, size: cardIconSize),
+                                icon: Icon(Icons.add, color: Colors.white, size: cardIconSize*0.9),
                                 tooltip: 'Ajouter un caca',
                                 onPressed: () {},
                               ),
@@ -125,14 +125,14 @@ class HomePage extends StatelessWidget {
                           children: [
                             CircleAvatar(
                               backgroundColor: Colors.indigo.shade200,
-                              child: Text('💊', style: TextStyle(fontSize: cardIconSize)),
+                              child: Text('💊', style: TextStyle(fontSize: cardIconSize*0.9)),
                             ),
                             SizedBox(width: SizeConfig.text(context, 0.03)),
                             Expanded(child: Text('Dernière vitamine le $vitaminDate à $vitaminTime', style: TextStyle(fontSize: cardFontSize))),
                             CircleAvatar(
                               backgroundColor: Colors.indigo,
                               child: IconButton(
-                                icon: Icon(Icons.add, color: Colors.white, size: cardIconSize),
+                                icon: Icon(Icons.add, color: Colors.white, size: cardIconSize*0.9),
                                 tooltip: 'Ajouter une vitamine',
                                 onPressed: () {},
                               ),

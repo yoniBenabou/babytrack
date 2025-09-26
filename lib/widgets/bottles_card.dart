@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 import '../utils/size_config.dart';
 
 class BottlesCard extends StatelessWidget {
@@ -34,5 +34,5 @@ class BottlesCard extends StatelessWidget {
       ),
     );
   }
-}
+}*/
 
