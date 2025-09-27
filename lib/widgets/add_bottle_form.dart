@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-// ...existing code...
+import 'cyclic_hour_minute_picker.dart';
+
 class AddBottleForm extends StatefulWidget {
   const AddBottleForm({super.key});
 
@@ -9,9 +10,12 @@ class AddBottleForm extends StatefulWidget {
 
 class _AddBottleFormState extends State<AddBottleForm> {
   double _amount = 120;
+  int _selectedHour = TimeOfDay.now().hour;
+  int _selectedMinute = (TimeOfDay.now().minute ~/ 5) * 5;
 
   void _submit() {
-    print('Quantité: \\${_amount.toInt()} ml');
+    print('Quantité: ${_amount.toInt()} ml');
+    print('Heure: ${_selectedHour.toString().padLeft(2, '0')}:${_selectedMinute.toString().padLeft(2, '0')}');
     Navigator.of(context).pop();
   }
 
@@ -40,6 +44,25 @@ class _AddBottleFormState extends State<AddBottleForm> {
             },
           ),
           SizedBox(height: 24),
+          Text('Sélectionne l\'heure', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          SizedBox(height: 8),
+          CyclicHourMinutePicker(
+            initialHour: _selectedHour,
+            initialMinute: _selectedMinute,
+            onHourChanged: (hour) {
+              setState(() {
+                _selectedHour = hour;
+              });
+            },
+            onMinuteChanged: (minute) {
+              setState(() {
+                _selectedMinute = minute;
+              });
+            },
+          ),
+          SizedBox(height: 8),
+          Text('Heure choisie : ${_selectedHour.toString().padLeft(2, '0')}:${_selectedMinute.toString().padLeft(2, '0')}', style: TextStyle(fontSize: 18, color: Colors.grey[700])),
+          SizedBox(height: 24),
           ElevatedButton(
             onPressed: _submit,
             child: const Text('Valider'),
@@ -53,4 +76,3 @@ class _AddBottleFormState extends State<AddBottleForm> {
     );
   }
 }
-// ...existing code...
