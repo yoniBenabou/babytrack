@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/size_config.dart';
+import 'add_bottle_form.dart';
 
 class BottlesCard extends StatelessWidget {
   final List<Map<String, dynamic>> bottles;
@@ -32,7 +33,13 @@ class BottlesCard extends StatelessWidget {
                     child: IconButton(
                       icon: Icon(Icons.add, color: Colors.white, size: cardIconSize*0.9),
                       tooltip: 'Ajouter un biberon',
-                      onPressed: () {},
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (ctx) => const AddBottleForm(),
+                        );
+                      },
                     ),
                   ),
                 ),
