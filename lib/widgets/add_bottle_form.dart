@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'cyclic_hour_minute_picker.dart';
 
@@ -14,8 +15,17 @@ class _AddBottleFormState extends State<AddBottleForm> {
   int _selectedMinute = (TimeOfDay.now().minute ~/ 5) * 5;
 
   void _submit() {
-    print('Quantité: ${_amount.toInt()} ml');
-    print('Heure: ${_selectedHour.toString().padLeft(2, '0')}:${_selectedMinute.toString().padLeft(2, '0')}');
+    //ajout dans la base de données
+    CollectionReference biberonRef = FirebaseFirestore.instance.collection(
+        'Biberon');
+    biberonRef.add({
+      'quantity': _amount.toInt(),
+      'date': DateTime(DateTime.now().year,
+          DateTime.now().month,
+          DateTime.now().day,
+          _selectedHour,
+          _selectedMinute),
+    });
     Navigator.of(context).pop();
   }
 
@@ -65,11 +75,11 @@ class _AddBottleFormState extends State<AddBottleForm> {
           SizedBox(height: 24),
           ElevatedButton(
             onPressed: _submit,
-            child: const Text('Valider'),
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(48),
               textStyle: const TextStyle(fontSize: 18),
             ),
+            child: const Text('Valider'),
           ),
         ],
       ),
