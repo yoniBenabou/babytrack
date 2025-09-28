@@ -50,9 +50,9 @@ class BottlesCard extends StatelessWidget {
             for (int i = 0; i < bottles.length; i++) ...[
               Row(
                 children: [
-                  Text('${bottles[i]["date"]} ${bottles[i]["time"]}', style: TextStyle(fontSize: cardFontSize)),
+                  Text(_formatDate(bottles[i]["date"]), style: TextStyle(fontSize: cardFontSize)),
                   SizedBox(width: SizeConfig.text(context, 0.04)),
-                  Text('${bottles[i]["amount"]}ml', style: TextStyle(fontSize: cardFontSize)),
+                  Text('${bottles[i]["quantity"] ?? 0} ml', style: TextStyle(fontSize: cardFontSize)),
                 ],
               ),
               if (i != bottles.length - 1) const Divider(),
@@ -69,5 +69,19 @@ class BottlesCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatDate(dynamic date) {
+    if (date == null) return '';
+    if (date is DateTime) {
+      return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    }
+    try {
+      if (date.runtimeType.toString().contains('Timestamp')) {
+        final dt = (date as dynamic).toDate();
+        return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+      }
+    } catch (_) {}
+    return date.toString();
   }
 }

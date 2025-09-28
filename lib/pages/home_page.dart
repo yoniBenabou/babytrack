@@ -58,16 +58,7 @@ class HomePage extends StatelessWidget {
                         return Column(
                           children: [
                             BottlesCard(
-                              bottles: lastFiveToday.map((bottle) {
-                                final dt = bottle['date'] is DateTime ? bottle['date'] : (bottle['date'] as dynamic).toDate();
-                                final dateStr = '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-                                final quantite = bottle['quantity'] ?? 0;
-                                return {
-                                  ...bottle,
-                                  'date': dateStr,
-                                  'display': '$dateStr - $quantite ml',
-                                };
-                              }).toList(),
+                              bottles: lastFiveToday,
                               cardFontSize: cardFontSize,
                               cardIconSize: cardIconSize,
                               totalJournalier: totalJournalier,
