@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/size_config.dart';
 import 'add_bottle_form.dart';
+import 'edit_bottle_form.dart';
 
 class BottlesCard extends StatelessWidget {
   final List<Map<String, dynamic>> bottles;
@@ -48,12 +49,36 @@ class BottlesCard extends StatelessWidget {
             ),
             SizedBox(height: SizeConfig.vertical(context, 0.02)),
             for (int i = 0; i < bottles.length; i++) ...[
-              Row(
-                children: [
-                  Text(_formatDate(bottles[i]["date"]), style: TextStyle(fontSize: cardFontSize)),
-                  SizedBox(width: SizeConfig.text(context, 0.04)),
-                  Text('${bottles[i]["quantity"] ?? 0} ml', style: TextStyle(fontSize: cardFontSize)),
-                ],
+              InkWell(
+                onTap: () {
+                  final bottle = bottles[i];
+                  final date = bottle["date"];
+                  DateTime dt;
+                  if (date is DateTime) {
+                    dt = date;
+                  } else if (date != null && date.runtimeType.toString().contains('Timestamp')) {
+                    dt = (date as dynamic).toDate();
+                  } else {
+                    dt = DateTime.now();
+                  }
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (ctx) => EditBottleForm(
+                      bottleId: bottle["id"],
+                      initialQuantity: bottle["quantity"] ?? 0,
+                      initialHour: dt.hour,
+                      initialMinute: dt.minute,
+                    ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    Text(_formatDate(bottles[i]["date"]), style: TextStyle(fontSize: cardFontSize)),
+                    SizedBox(width: SizeConfig.text(context, 0.04)),
+                    Text('${bottles[i]["quantity"] ?? 0} ml', style: TextStyle(fontSize: cardFontSize)),
+                  ],
+                ),
               ),
               if (i != bottles.length - 1) const Divider(),
             ],

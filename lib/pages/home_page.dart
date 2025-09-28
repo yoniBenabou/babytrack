@@ -38,7 +38,7 @@ class HomePage extends StatelessWidget {
                         // On trie les biberons du jour par date décroissante
                         final today = DateTime.now();
                         final bottlesToday = docs
-                          .map((doc) => doc.data() as Map<String, dynamic>)
+                          .map((doc) => {...doc.data() as Map<String, dynamic>, 'id': doc.id})
                           .where((bottle) {
                             final ts = bottle['date'];
                             if (ts == null) return false;
