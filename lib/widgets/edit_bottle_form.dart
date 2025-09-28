@@ -80,6 +80,7 @@ class _EditBottleFormState extends State<EditBottleForm> {
           _selectedHour,
           _selectedMinute),
     });
+    if (!mounted) return;
     Navigator.of(context).pop();
   }
 

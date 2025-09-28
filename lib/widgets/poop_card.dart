@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/size_config.dart';
+import 'add_poop_form.dart';
 
 class PoopCard extends StatelessWidget {
   final String poopDate;
@@ -29,7 +30,13 @@ class PoopCard extends StatelessWidget {
               child: IconButton(
                 icon: Icon(Icons.add, color: Colors.white, size: cardIconSize*0.9),
                 tooltip: 'Ajouter un caca',
-                onPressed: () {},
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (ctx) => const AddPoopForm(),
+                  );
+                },
               ),
             ),
           ],

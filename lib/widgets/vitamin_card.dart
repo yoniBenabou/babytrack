@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/size_config.dart';
+import 'add_vitamin_form.dart';
 
 class VitaminCard extends StatelessWidget {
   final String vitaminDate;
@@ -29,7 +30,13 @@ class VitaminCard extends StatelessWidget {
               child: IconButton(
                 icon: Icon(Icons.add, color: Colors.white, size: cardIconSize*0.9),
                 tooltip: 'Ajouter une vitamine',
-                onPressed: () {},
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (ctx) => const AddVitaminForm(),
+                  );
+                },
               ),
             ),
           ],
