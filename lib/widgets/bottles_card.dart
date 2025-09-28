@@ -6,7 +6,8 @@ class BottlesCard extends StatelessWidget {
   final List<Map<String, dynamic>> bottles;
   final double cardFontSize;
   final double cardIconSize;
-  const BottlesCard({required this.bottles, required this.cardFontSize, required this.cardIconSize, super.key});
+  const BottlesCard({required this.bottles, required this.cardFontSize, required this.cardIconSize, this.totalJournalier, super.key});
+  final int? totalJournalier;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +62,7 @@ class BottlesCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Total journalier :', style: TextStyle(fontSize: cardFontSize, fontWeight: FontWeight.bold)),
-                Text('520 ml', style: TextStyle(fontSize: cardFontSize, color: Colors.blue)),
+                Text('${totalJournalier ?? 0} ml', style: TextStyle(fontSize: cardFontSize, color: Colors.blue)),
               ],
             )
           ],
