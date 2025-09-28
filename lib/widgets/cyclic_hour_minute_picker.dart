@@ -42,8 +42,8 @@ class _CyclicHourMinutePickerState extends State<CyclicHourMinutePicker> {
     super.initState();
     _selectedHour = widget.initialHour;
     _selectedMinute = (widget.initialMinute ~/ 5) * 5;
-    _hourController = FixedExtentScrollController(initialItem: (hourItemCount ~/ 2) + _selectedHour);
-    _minuteController = FixedExtentScrollController(initialItem: (minuteItemCount ~/ 2) + (_selectedMinute ~/ 5));
+    _hourController = FixedExtentScrollController(initialItem: (hourItemCount ~/ 2) + 4 + _selectedHour);
+    _minuteController = FixedExtentScrollController(initialItem: (minuteItemCount ~/ 2) + 4 + (_selectedMinute ~/ 5));
     _prevMinuteIndex = (minuteItemCount ~/ 2) + (_selectedMinute ~/ 5);
   }
 
