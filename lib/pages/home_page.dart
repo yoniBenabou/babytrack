@@ -72,11 +72,12 @@ class HomePage extends StatelessWidget {
                       builder: (context, snapshot) {
                         String poopDate = 'Aucun';
                         String poopTime = '';
+                        List<DocumentSnapshot> sortedDocs = [];
 
                         if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
                           final docs = snapshot.data!.docs;
                           // Trier par date décroissante pour avoir le plus récent
-                          final sortedDocs = docs.toList();
+                          sortedDocs = docs.toList();
                           sortedDocs.sort((a, b) {
                             final dataA = a.data() as Map<String, dynamic>;
                             final dataB = b.data() as Map<String, dynamic>;
@@ -86,7 +87,8 @@ class HomePage extends StatelessWidget {
                           });
 
                           if (sortedDocs.isNotEmpty) {
-                            final lastPoop = sortedDocs.first.data() as Map<String, dynamic>;
+                            final lastPoopDoc = sortedDocs.first;
+                            final lastPoop = lastPoopDoc.data() as Map<String, dynamic>;
                             final date = lastPoop['date'] is DateTime ? lastPoop['date'] : (lastPoop['date'] as dynamic).toDate();
                             poopDate = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
                             poopTime = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
@@ -98,6 +100,7 @@ class HomePage extends StatelessWidget {
                           poopTime: poopTime,
                           cardFontSize: cardFontSize,
                           cardIconSize: cardIconSize,
+                          poopDoc: sortedDocs.isNotEmpty ? sortedDocs.first : null,
                         );
                       },
                     ),
@@ -107,11 +110,12 @@ class HomePage extends StatelessWidget {
                       builder: (context, snapshot) {
                         String vitaminDate = 'Aucune';
                         String vitaminTime = '';
+                        List<DocumentSnapshot> sortedDocs = [];
 
                         if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
                           final docs = snapshot.data!.docs;
                           // Trier par date décroissante pour avoir la plus récente
-                          final sortedDocs = docs.toList();
+                          sortedDocs = docs.toList();
                           sortedDocs.sort((a, b) {
                             final dataA = a.data() as Map<String, dynamic>;
                             final dataB = b.data() as Map<String, dynamic>;
@@ -121,7 +125,8 @@ class HomePage extends StatelessWidget {
                           });
 
                           if (sortedDocs.isNotEmpty) {
-                            final lastVitamin = sortedDocs.first.data() as Map<String, dynamic>;
+                            final lastVitaminDoc = sortedDocs.first;
+                            final lastVitamin = lastVitaminDoc.data() as Map<String, dynamic>;
                             final date = lastVitamin['date'] is DateTime ? lastVitamin['date'] : (lastVitamin['date'] as dynamic).toDate();
                             vitaminDate = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
                             vitaminTime = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
@@ -133,6 +138,7 @@ class HomePage extends StatelessWidget {
                           vitaminTime: vitaminTime,
                           cardFontSize: cardFontSize,
                           cardIconSize: cardIconSize,
+                          vitaminDoc: sortedDocs.isNotEmpty ? sortedDocs.first : null,
                         );
                       },
                     ),

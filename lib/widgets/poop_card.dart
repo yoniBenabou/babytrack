@@ -1,13 +1,23 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../utils/size_config.dart';
 import 'add_poop_form.dart';
+import 'edit_poop_form.dart';
 
 class PoopCard extends StatelessWidget {
   final String poopDate;
   final String poopTime;
   final double cardFontSize;
   final double cardIconSize;
-  const PoopCard({required this.poopDate, required this.poopTime, required this.cardFontSize, required this.cardIconSize, super.key});
+  final DocumentSnapshot? poopDoc;
+  const PoopCard({
+    required this.poopDate,
+    required this.poopTime,
+    required this.cardFontSize,
+    required this.cardIconSize,
+    this.poopDoc,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +34,23 @@ class PoopCard extends StatelessWidget {
               child: Text('💩', style: TextStyle(fontSize: cardIconSize*0.9)),
             ),
             SizedBox(width: SizeConfig.text(context, 0.03)),
-            Expanded(child: Text('Dernier caca le $poopDate à $poopTime', style: TextStyle(fontSize: cardFontSize))),
+            Expanded(
+              child: InkWell(
+                onTap: poopDoc != null
+                    ? () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (ctx) => EditPoopForm(poopDoc: poopDoc!),
+                        );
+                      }
+                    : null,
+                child: Text(
+                  'Dernier caca le $poopDate à $poopTime',
+                  style: TextStyle(fontSize: cardFontSize),
+                ),
+              ),
+            ),
             CircleAvatar(
               backgroundColor: Colors.brown,
               child: IconButton(

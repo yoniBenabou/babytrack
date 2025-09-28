@@ -1,13 +1,23 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../utils/size_config.dart';
 import 'add_vitamin_form.dart';
+import 'edit_vitamin_form.dart';
 
 class VitaminCard extends StatelessWidget {
   final String vitaminDate;
   final String vitaminTime;
   final double cardFontSize;
   final double cardIconSize;
-  const VitaminCard({required this.vitaminDate, required this.vitaminTime, required this.cardFontSize, required this.cardIconSize, super.key});
+  final DocumentSnapshot? vitaminDoc;
+  const VitaminCard({
+    required this.vitaminDate,
+    required this.vitaminTime,
+    required this.cardFontSize,
+    required this.cardIconSize,
+    this.vitaminDoc,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +34,23 @@ class VitaminCard extends StatelessWidget {
               child: Text('💊', style: TextStyle(fontSize: cardIconSize*0.9)),
             ),
             SizedBox(width: SizeConfig.text(context, 0.03)),
-            Expanded(child: Text('Dernière vitamine le $vitaminDate à $vitaminTime', style: TextStyle(fontSize: cardFontSize))),
+            Expanded(
+              child: InkWell(
+                onTap: vitaminDoc != null
+                    ? () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (ctx) => EditVitaminForm(vitaminDoc: vitaminDoc!),
+                        );
+                      }
+                    : null,
+                child: Text(
+                  'Dernière vitamine le $vitaminDate à $vitaminTime',
+                  style: TextStyle(fontSize: cardFontSize),
+                ),
+              ),
+            ),
             CircleAvatar(
               backgroundColor: Colors.indigo,
               child: IconButton(

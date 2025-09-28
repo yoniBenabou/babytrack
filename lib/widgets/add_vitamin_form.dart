@@ -66,69 +66,76 @@ class _AddVitaminFormState extends State<AddVitaminForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(height: 16),
-          Text('Ajouter une vitamine', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          SizedBox(height: 24),
-
-          // Sélection de la date
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Date : ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              TextButton.icon(
-                icon: Icon(Icons.calendar_today, color: Colors.orange),
-                label: Text(
-                  '${_selectedDate.day.toString().padLeft(2, '0')}/'
-                  '${_selectedDate.month.toString().padLeft(2, '0')}/'
-                  '${_selectedDate.year}',
-                  style: TextStyle(fontSize: 18, color: Colors.orange, fontWeight: FontWeight.bold),
+              SizedBox(height: 16),
+              Text('Ajouter une vitamine', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              SizedBox(height: 24),
+
+              // Sélection de la date
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Date : ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  TextButton.icon(
+                    icon: Icon(Icons.calendar_today, color: Colors.orange),
+                    label: Text(
+                      '${_selectedDate.day.toString().padLeft(2, '0')}/'
+                      '${_selectedDate.month.toString().padLeft(2, '0')}/'
+                      '${_selectedDate.year}',
+                      style: TextStyle(fontSize: 18, color: Colors.orange, fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: _pickDate,
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 8),
+
+              // Sélection de l'heure
+              Text('Sélectionne l\'heure', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              SizedBox(height: 8),
+              CyclicHourMinutePicker(
+                initialHour: _selectedHour,
+                initialMinute: _selectedMinute,
+                onHourChanged: (hour) {
+                  _onHourChanged(hour);
+                },
+                onMinuteChanged: (minute) {
+                  setState(() {
+                    _selectedMinute = minute;
+                  });
+                },
+              ),
+
+              SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _submit,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                onPressed: _pickDate,
+                child: const Text('Valider', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           ),
-
-          SizedBox(height: 8),
-
-          // Sélection de l'heure
-          Text('Sélectionne l\'heure', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          SizedBox(height: 8),
-          CyclicHourMinutePicker(
-            initialHour: _selectedHour,
-            initialMinute: _selectedMinute,
-            onHourChanged: (hour) {
-              _onHourChanged(hour);
-            },
-            onMinuteChanged: (minute) {
-              setState(() {
-                _selectedMinute = minute;
-              });
-            },
-          ),
-
-          SizedBox(height: 24),
-
-          // Bouton de validation
-          ElevatedButton(
-            onPressed: _submit,
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size.fromHeight(48),
-              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('Valider', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
+        ),
       ),
     );
   }
