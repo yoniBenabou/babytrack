@@ -24,6 +24,7 @@ class _EditBottleFormState extends State<EditBottleForm> {
   late double _amount;
   late int _selectedHour;
   late int _selectedMinute;
+  late DateTime _selectedDate;
 
   @override
   void initState() {
@@ -31,15 +32,51 @@ class _EditBottleFormState extends State<EditBottleForm> {
     _amount = widget.initialQuantity.toDouble();
     _selectedHour = widget.initialHour;
     _selectedMinute = widget.initialMinute;
+    _selectedDate = DateTime.now(); // Par défaut aujourd'hui
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now().add(Duration(days: 365)),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  void _onHourChanged(int newHour) {
+    // Logique pour changer de jour automatiquement
+    if (_selectedHour == 23 && newHour == 0) {
+      // Passage de 23h à 00h -> jour suivant
+      setState(() {
+        _selectedHour = newHour;
+        _selectedDate = _selectedDate.add(Duration(days: 1));
+      });
+    } else if (_selectedHour == 0 && newHour == 23) {
+      // Passage de 00h à 23h -> jour précédent
+      setState(() {
+        _selectedHour = newHour;
+        _selectedDate = _selectedDate.subtract(Duration(days: 1));
+      });
+    } else {
+      setState(() {
+        _selectedHour = newHour;
+      });
+    }
   }
 
   void _submit() async {
     // Mise à jour dans la base de données
     await FirebaseFirestore.instance.collection('Biberon').doc(widget.bottleId).update({
       'quantity': _amount.toInt(),
-      'date': DateTime(DateTime.now().year,
-          DateTime.now().month,
-          DateTime.now().day,
+      'date': DateTime(_selectedDate.year,
+          _selectedDate.month,
+          _selectedDate.day,
           _selectedHour,
           _selectedMinute),
     });
@@ -53,7 +90,6 @@ class _EditBottleFormState extends State<EditBottleForm> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('🍼', style: TextStyle(fontSize: 64)),
           SizedBox(height: 16),
           Text('Modifier la quantité bue', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           SizedBox(height: 16),
@@ -71,16 +107,29 @@ class _EditBottleFormState extends State<EditBottleForm> {
             },
           ),
           SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Date : ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              TextButton.icon(
+                icon: Icon(Icons.calendar_today, color: Colors.blue),
+                label: Text(
+                  '${_selectedDate.day.toString().padLeft(2, '0')}/'
+                  '${_selectedDate.month.toString().padLeft(2, '0')}/'
+                  '${_selectedDate.year}',
+                  style: TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold),
+                ),
+                onPressed: _pickDate,
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
           Text('Modifier l\'heure', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           SizedBox(height: 8),
           CyclicHourMinutePicker(
             initialHour: _selectedHour,
             initialMinute: _selectedMinute,
-            onHourChanged: (hour) {
-              setState(() {
-                _selectedHour = hour;
-              });
-            },
+            onHourChanged: _onHourChanged,
             onMinuteChanged: (minute) {
               setState(() {
                 _selectedMinute = minute;

@@ -35,30 +35,32 @@ class HomePage extends StatelessWidget {
                           return Center(child: CircularProgressIndicator());
                         }
                         final docs = snapshot.data!.docs;
-                        // On trie les biberons du jour par date décroissante
-                        final today = DateTime.now();
-                        final bottlesToday = docs
+                        // On récupère tous les biberons et on les trie par date décroissante
+                        final allBottles = docs
                           .map((doc) => {...doc.data() as Map<String, dynamic>, 'id': doc.id})
-                          .where((bottle) {
-                            final ts = bottle['date'];
-                            if (ts == null) return false;
-                            final dt = ts is DateTime ? ts : (ts as dynamic).toDate();
-                            return dt.year == today.year && dt.month == today.month && dt.day == today.day;
-                          })
                           .toList();
-                        bottlesToday.sort((a, b) {
+                        allBottles.sort((a, b) {
                           final dtA = a['date'] is DateTime ? a['date'] : (a['date'] as dynamic).toDate();
                           final dtB = b['date'] is DateTime ? b['date'] : (b['date'] as dynamic).toDate();
                           return dtB.compareTo(dtA);
                         });
-                        // On affiche uniquement les 5 derniers biberons du jour
-                        final lastFiveToday = bottlesToday.take(5).toList();
-                        // Calcul du total journalier
+                        // On affiche les 5 derniers biberons (toutes dates confondues)
+                        final lastFiveBottles = allBottles.take(5).toList();
+
+                        // Calcul du total journalier (on garde ce calcul pour aujourd'hui)
+                        final today = DateTime.now();
+                        final bottlesToday = allBottles.where((bottle) {
+                          final ts = bottle['date'];
+                          if (ts == null) return false;
+                          final dt = ts is DateTime ? ts : (ts as dynamic).toDate();
+                          return dt.year == today.year && dt.month == today.month && dt.day == today.day;
+                        }).toList();
                         final totalJournalier = bottlesToday.fold<int>(0, (sum, bottle) => sum + ((bottle['quantity'] ?? 0) as int));
+
                         return Column(
                           children: [
                             BottlesCard(
-                              bottles: lastFiveToday,
+                              bottles: lastFiveBottles,
                               cardFontSize: cardFontSize,
                               cardIconSize: cardIconSize,
                               totalJournalier: totalJournalier,
