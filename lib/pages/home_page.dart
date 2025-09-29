@@ -111,6 +111,7 @@ class HomePage extends StatelessWidget {
                         String vitaminDate = 'Aucune';
                         String vitaminTime = '';
                         List<DocumentSnapshot> sortedDocs = [];
+                        bool isToday = false;
 
                         if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
                           final docs = snapshot.data!.docs;
@@ -130,6 +131,8 @@ class HomePage extends StatelessWidget {
                             final date = lastVitamin['date'] is DateTime ? lastVitamin['date'] : (lastVitamin['date'] as dynamic).toDate();
                             vitaminDate = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
                             vitaminTime = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+                            final now = DateTime.now();
+                            isToday = date.year == now.year && date.month == now.month && date.day == now.day;
                           }
                         }
 
@@ -139,6 +142,7 @@ class HomePage extends StatelessWidget {
                           cardFontSize: cardFontSize,
                           cardIconSize: cardIconSize,
                           vitaminDoc: sortedDocs.isNotEmpty ? sortedDocs.first : null,
+                          isToday: isToday,
                         );
                       },
                     ),

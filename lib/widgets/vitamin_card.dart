@@ -10,19 +10,23 @@ class VitaminCard extends StatelessWidget {
   final double cardFontSize;
   final double cardIconSize;
   final DocumentSnapshot? vitaminDoc;
+  final bool isToday;
   const VitaminCard({
     required this.vitaminDate,
     required this.vitaminTime,
     required this.cardFontSize,
     required this.cardIconSize,
     this.vitaminDoc,
+    required this.isToday,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    final Color cardColor = isToday ? Colors.green.shade100 : Colors.red.shade100;
+    final Color avatarColor = isToday ? Colors.green.shade300 : Colors.red.shade300;
     return Card(
-      color: Colors.indigo.shade50,
+      color: cardColor,
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Padding(
@@ -30,7 +34,7 @@ class VitaminCard extends StatelessWidget {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: Colors.indigo.shade200,
+              backgroundColor: avatarColor,
               child: Text('💊', style: TextStyle(fontSize: cardIconSize*0.9)),
             ),
             SizedBox(width: SizeConfig.text(context, 0.03)),
@@ -52,7 +56,7 @@ class VitaminCard extends StatelessWidget {
               ),
             ),
             CircleAvatar(
-              backgroundColor: Colors.indigo,
+              backgroundColor: avatarColor,
               child: IconButton(
                 icon: Icon(Icons.add, color: Colors.white, size: cardIconSize*0.9),
                 tooltip: 'Ajouter une vitamine',
