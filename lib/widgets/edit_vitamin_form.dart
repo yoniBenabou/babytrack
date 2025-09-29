@@ -132,6 +132,24 @@ class _EditVitaminFormState extends State<EditVitaminForm> {
                 ),
                 child: const Text('Enregistrer', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
+              SizedBox(height: 16),
+              TextButton.icon(
+                icon: Icon(Icons.delete, color: Colors.white),
+                label: Text('Supprimer', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                onPressed: () async {
+                  await widget.vitaminDoc.reference.delete();
+                  Navigator.of(context).pop();
+                },
+                style: TextButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -139,4 +157,3 @@ class _EditVitaminFormState extends State<EditVitaminForm> {
     );
   }
 }
-

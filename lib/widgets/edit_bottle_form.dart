@@ -86,91 +86,100 @@ class _EditBottleFormState extends State<EditBottleForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(height: 16),
-          Text('Modifier la quantité bue', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          SizedBox(height: 16),
-          Text('${_amount.toInt()} ml', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blue)),
-          Slider(
-            value: _amount,
-            min: 10,
-            max: 300,
-            divisions: 29,
-            label: '${_amount.toInt()} ml',
-            onChanged: (value) {
-              setState(() {
-                _amount = (value/10).round()*10;
-              });
-            },
-          ),
-          SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Date : ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              TextButton.icon(
-                icon: Icon(Icons.calendar_today, color: Colors.blue),
-                label: Text(
-                  '${_selectedDate.day.toString().padLeft(2, '0')}/'
-                  '${_selectedDate.month.toString().padLeft(2, '0')}/'
-                  '${_selectedDate.year}',
-                  style: TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold),
+              SizedBox(height: 16),
+              Text('Modifier la quantité bue', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              SizedBox(height: 16),
+              Text('${_amount.toInt()} ml', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blue)),
+              Slider(
+                value: _amount,
+                min: 10,
+                max: 300,
+                divisions: 29,
+                label: '${_amount.toInt()} ml',
+                onChanged: (value) {
+                  setState(() {
+                    _amount = (value/10).round()*10;
+                  });
+                },
+              ),
+              SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Date : ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  TextButton.icon(
+                    icon: Icon(Icons.calendar_today, color: Colors.blue),
+                    label: Text(
+                      '${_selectedDate.day.toString().padLeft(2, '0')}/'
+                      '${_selectedDate.month.toString().padLeft(2, '0')}/'
+                      '${_selectedDate.year}',
+                      style: TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: _pickDate,
+                  ),
+                ],
+              ),
+              SizedBox(height: 8),
+              Text('Modifier l\'heure', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              SizedBox(height: 8),
+              CyclicHourMinutePicker(
+                initialHour: _selectedHour,
+                initialMinute: _selectedMinute,
+                onHourChanged: _onHourChanged,
+                onMinuteChanged: (minute) {
+                  setState(() {
+                    _selectedMinute = minute;
+                  });
+                },
+              ),
+              SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: _submit,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                onPressed: _pickDate,
+                child: const Text('Enregistrer', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+              SizedBox(height: 16),
+              TextButton.icon(
+                icon: Icon(Icons.delete, color: Colors.white),
+                label: Text('Supprimer', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                onPressed: () async {
+                  await FirebaseFirestore.instance.collection('Biberon').doc(widget.bottleId).delete();
+                  Navigator.of(context).pop();
+                },
+                style: TextButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               ),
             ],
           ),
-          SizedBox(height: 8),
-          Text('Modifier l\'heure', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          SizedBox(height: 8),
-          CyclicHourMinutePicker(
-            initialHour: _selectedHour,
-            initialMinute: _selectedMinute,
-            onHourChanged: _onHourChanged,
-            onMinuteChanged: (minute) {
-              setState(() {
-                _selectedMinute = minute;
-              });
-            },
-          ),
-          SizedBox(height: 8),
-          ElevatedButton(
-            onPressed: _submit,
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size.fromHeight(48),
-              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('Enregistrer', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-          SizedBox(height: 16),
-          TextButton.icon(
-            icon: Icon(Icons.delete, color: Colors.white),
-            label: Text('Supprimer', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-            onPressed: () async {
-              await FirebaseFirestore.instance.collection('Biberon').doc(widget.bottleId).delete();
-              Navigator.of(context).pop();
-            },
-            style: TextButton.styleFrom(
-              minimumSize: const Size.fromHeight(48),
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
