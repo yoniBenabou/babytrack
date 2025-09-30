@@ -88,12 +88,12 @@ class _AddVitaminFormState extends State<AddVitaminForm> {
                 children: [
                   Text('Date : ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   TextButton.icon(
-                    icon: Icon(Icons.calendar_today, color: Colors.orange),
+                    icon: Icon(Icons.calendar_today, color: Colors.green),
                     label: Text(
                       '${_selectedDate.day.toString().padLeft(2, '0')}/'
                       '${_selectedDate.month.toString().padLeft(2, '0')}/'
                       '${_selectedDate.year}',
-                      style: TextStyle(fontSize: 18, color: Colors.orange, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 18, color: Colors.green, fontWeight: FontWeight.bold),
                     ),
                     onPressed: _pickDate,
                   ),
@@ -124,7 +124,7 @@ class _AddVitaminFormState extends State<AddVitaminForm> {
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                   textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  backgroundColor: Colors.orange,
+                  backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
                   elevation: 4,
                   shape: RoundedRectangleBorder(

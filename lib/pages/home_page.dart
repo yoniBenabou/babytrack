@@ -22,131 +22,123 @@ class HomePage extends StatelessWidget {
             children: [
               Expanded(
                 flex: 4,
-                child: ListView(
-                  children: [
-                    StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance.collection('Biberon').snapshots(),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return Center(child: CircularProgressIndicator());
-                        }
-                        final docs = snapshot.data!.docs;
-                        // On récupère tous les biberons et on les trie par date décroissante
-                        final allBottles = docs
-                          .map((doc) => {...doc.data() as Map<String, dynamic>, 'id': doc.id})
-                          .toList();
-                        allBottles.sort((a, b) {
-                          final dtA = a['date'] is DateTime ? a['date'] : (a['date'] as dynamic).toDate();
-                          final dtB = b['date'] is DateTime ? b['date'] : (b['date'] as dynamic).toDate();
-                          return dtB.compareTo(dtA);
-                        });
-                        // On affiche les 5 derniers biberons (toutes dates confondues)
-                        final lastFiveBottles = allBottles.take(5).toList();
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance.collection('Biberon').snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                    final docs = snapshot.data!.docs;
+                    final allBottles = docs
+                      .map((doc) => {...doc.data() as Map<String, dynamic>, 'id': doc.id})
+                      .toList();
+                    allBottles.sort((a, b) {
+                      final dtA = a['date'] is DateTime ? a['date'] : (a['date'] as dynamic).toDate();
+                      final dtB = b['date'] is DateTime ? b['date'] : (b['date'] as dynamic).toDate();
+                      return dtB.compareTo(dtA);
+                    });
+                    final lastFiveBottles = allBottles.take(5).toList();
+                    final today = DateTime.now();
+                    final bottlesToday = allBottles.where((bottle) {
+                      final ts = bottle['date'];
+                      if (ts == null) return false;
+                      final dt = ts is DateTime ? ts : (ts as dynamic).toDate();
+                      return dt.year == today.year && dt.month == today.month && dt.day == today.day;
+                    }).toList();
+                    final totalJournalier = bottlesToday.fold<int>(0, (acc, bottle) => acc + ((bottle['quantity'] ?? 0) as int));
+                    return BottlesCard(
+                      bottles: lastFiveBottles,
+                      cardFontSize: cardFontSize,
+                      cardIconSize: cardIconSize,
+                      totalJournalier: totalJournalier,
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: cardSpace),
+              Expanded(
+                flex: 1,
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance.collection('Poop').snapshots(),
+                  builder: (context, snapshot) {
+                    String poopDate = 'Aucun';
+                    String poopTime = '';
+                    List<DocumentSnapshot> sortedDocs = [];
 
-                        // Calcul du total journalier (on garde ce calcul pour aujourd'hui)
-                        final today = DateTime.now();
-                        final bottlesToday = allBottles.where((bottle) {
-                          final ts = bottle['date'];
-                          if (ts == null) return false;
-                          final dt = ts is DateTime ? ts : (ts as dynamic).toDate();
-                          return dt.year == today.year && dt.month == today.month && dt.day == today.day;
-                        }).toList();
-                        final totalJournalier = bottlesToday.fold<int>(0, (acc, bottle) => acc + ((bottle['quantity'] ?? 0) as int));
+                    if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                      final docs = snapshot.data!.docs;
+                      // Trier par date décroissante pour avoir le plus récent
+                      sortedDocs = docs.toList();
+                      sortedDocs.sort((a, b) {
+                        final dataA = a.data() as Map<String, dynamic>;
+                        final dataB = b.data() as Map<String, dynamic>;
+                        final dateA = dataA['date'] is DateTime ? dataA['date'] : (dataA['date'] as dynamic).toDate();
+                        final dateB = dataB['date'] is DateTime ? dataB['date'] : (dataB['date'] as dynamic).toDate();
+                        return dateB.compareTo(dateA);
+                      });
 
-                        return Column(
-                          children: [
-                            BottlesCard(
-                              bottles: lastFiveBottles,
-                              cardFontSize: cardFontSize,
-                              cardIconSize: cardIconSize,
-                              totalJournalier: totalJournalier,
-                            ),
+                      if (sortedDocs.isNotEmpty) {
+                        final lastPoopDoc = sortedDocs.first;
+                        final lastPoop = lastPoopDoc.data() as Map<String, dynamic>;
+                        final date = lastPoop['date'] is DateTime ? lastPoop['date'] : (lastPoop['date'] as dynamic).toDate();
+                        poopDate = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+                        poopTime = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+                      }
+                    }
 
-                          ],
-                        );
-                      },
-                    ),
-                    SizedBox(height: cardSpace),
-                    StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance.collection('Poop').snapshots(),
-                      builder: (context, snapshot) {
-                        String poopDate = 'Aucun';
-                        String poopTime = '';
-                        List<DocumentSnapshot> sortedDocs = [];
+                    return PoopCard(
+                      poopDate: poopDate,
+                      poopTime: poopTime,
+                      cardFontSize: cardFontSize,
+                      cardIconSize: cardIconSize,
+                      poopDoc: sortedDocs.isNotEmpty ? sortedDocs.first : null,
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: cardSpace),
+              Expanded(
+                flex: 1,
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance.collection('Vitamin').snapshots(),
+                  builder: (context, snapshot) {
+                    String vitaminDate = 'Aucune';
+                    String vitaminTime = '';
+                    List<DocumentSnapshot> sortedDocs = [];
+                    bool isToday = false;
 
-                        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-                          final docs = snapshot.data!.docs;
-                          // Trier par date décroissante pour avoir le plus récent
-                          sortedDocs = docs.toList();
-                          sortedDocs.sort((a, b) {
-                            final dataA = a.data() as Map<String, dynamic>;
-                            final dataB = b.data() as Map<String, dynamic>;
-                            final dateA = dataA['date'] is DateTime ? dataA['date'] : (dataA['date'] as dynamic).toDate();
-                            final dateB = dataB['date'] is DateTime ? dataB['date'] : (dataB['date'] as dynamic).toDate();
-                            return dateB.compareTo(dateA);
-                          });
+                    if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                      final docs = snapshot.data!.docs;
+                      // Trier par date décroissante pour avoir la plus récente
+                      sortedDocs = docs.toList();
+                      sortedDocs.sort((a, b) {
+                        final dataA = a.data() as Map<String, dynamic>;
+                        final dataB = b.data() as Map<String, dynamic>;
+                        final dateA = dataA['date'] is DateTime ? dataA['date'] : (dataA['date'] as dynamic).toDate();
+                        final dateB = dataB['date'] is DateTime ? dataB['date'] : (dataB['date'] as dynamic).toDate();
+                        return dateB.compareTo(dateA);
+                      });
 
-                          if (sortedDocs.isNotEmpty) {
-                            final lastPoopDoc = sortedDocs.first;
-                            final lastPoop = lastPoopDoc.data() as Map<String, dynamic>;
-                            final date = lastPoop['date'] is DateTime ? lastPoop['date'] : (lastPoop['date'] as dynamic).toDate();
-                            poopDate = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
-                            poopTime = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-                          }
-                        }
+                      if (sortedDocs.isNotEmpty) {
+                        final lastVitaminDoc = sortedDocs.first;
+                        final lastVitamin = lastVitaminDoc.data() as Map<String, dynamic>;
+                        final date = lastVitamin['date'] is DateTime ? lastVitamin['date'] : (lastVitamin['date'] as dynamic).toDate();
+                        vitaminDate = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+                        vitaminTime = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+                        final now = DateTime.now();
+                        isToday = date.year == now.year && date.month == now.month && date.day == now.day;
+                      }
+                    }
 
-                        return PoopCard(
-                          poopDate: poopDate,
-                          poopTime: poopTime,
-                          cardFontSize: cardFontSize,
-                          cardIconSize: cardIconSize,
-                          poopDoc: sortedDocs.isNotEmpty ? sortedDocs.first : null,
-                        );
-                      },
-                    ),
-                    SizedBox(height: cardSpace),
-                    StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance.collection('Vitamin').snapshots(),
-                      builder: (context, snapshot) {
-                        String vitaminDate = 'Aucune';
-                        String vitaminTime = '';
-                        List<DocumentSnapshot> sortedDocs = [];
-                        bool isToday = false;
-
-                        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-                          final docs = snapshot.data!.docs;
-                          // Trier par date décroissante pour avoir la plus récente
-                          sortedDocs = docs.toList();
-                          sortedDocs.sort((a, b) {
-                            final dataA = a.data() as Map<String, dynamic>;
-                            final dataB = b.data() as Map<String, dynamic>;
-                            final dateA = dataA['date'] is DateTime ? dataA['date'] : (dataA['date'] as dynamic).toDate();
-                            final dateB = dataB['date'] is DateTime ? dataB['date'] : (dataB['date'] as dynamic).toDate();
-                            return dateB.compareTo(dateA);
-                          });
-
-                          if (sortedDocs.isNotEmpty) {
-                            final lastVitaminDoc = sortedDocs.first;
-                            final lastVitamin = lastVitaminDoc.data() as Map<String, dynamic>;
-                            final date = lastVitamin['date'] is DateTime ? lastVitamin['date'] : (lastVitamin['date'] as dynamic).toDate();
-                            vitaminDate = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
-                            vitaminTime = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-                            final now = DateTime.now();
-                            isToday = date.year == now.year && date.month == now.month && date.day == now.day;
-                          }
-                        }
-
-                        return VitaminCard(
-                          vitaminDate: vitaminDate,
-                          vitaminTime: vitaminTime,
-                          cardFontSize: cardFontSize,
-                          cardIconSize: cardIconSize,
-                          vitaminDoc: sortedDocs.isNotEmpty ? sortedDocs.first : null,
-                          isToday: isToday,
-                        );
-                      },
-                    ),
-                  ],
+                    return VitaminCard(
+                      vitaminDate: vitaminDate,
+                      vitaminTime: vitaminTime,
+                      cardFontSize: cardFontSize,
+                      cardIconSize: cardIconSize,
+                      vitaminDoc: sortedDocs.isNotEmpty ? sortedDocs.first : null,
+                      isToday: isToday,
+                    );
+                  },
                 ),
               ),
             ],
