@@ -10,7 +10,7 @@ class AddBottleForm extends StatefulWidget {
 }
 
 class _AddBottleFormState extends State<AddBottleForm> {
-  double _amount = 120;
+  double _amount = 150;
   int _selectedHour = TimeOfDay.now().hour;
   int _selectedMinute = (TimeOfDay.now().minute ~/ 5) * 5;
   DateTime _selectedDate = DateTime.now();
@@ -86,8 +86,8 @@ class _AddBottleFormState extends State<AddBottleForm> {
               Slider(
                 value: _amount,
                 min: 10,
-                max: 300,
-                divisions: 29,
+                max: 210,
+                divisions: 20,
                 label: '${_amount.toInt()} ml',
                 onChanged: (value) {
                   setState(() {
