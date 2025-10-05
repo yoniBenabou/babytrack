@@ -27,9 +27,11 @@ class _MainScreenState extends State<MainScreen> {
     final double navBarHeight = SizeConfig.vertical(context, 0.11);
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          _selectedIndex == 0 ? 'Accueil' : 'Statistiques',
-          style: TextStyle(fontSize: appBarFontSize, fontWeight: FontWeight.bold),
+        title: FittedBox(
+          child: Text(
+            _selectedIndex == 0 ? 'Accueil' : 'Statistiques',
+            style: TextStyle(fontSize: appBarFontSize, fontWeight: FontWeight.bold),
+          ),
         ),
         centerTitle: true,
         toolbarHeight: navBarHeight,
