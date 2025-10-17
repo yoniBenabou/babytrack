@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'cyclic_hour_minute_picker.dart';
 
 class AddVitaminForm extends StatefulWidget {
-  const AddVitaminForm({super.key});
+  final String? initialType; // conservé pour compatibilité, mais par défaut les deux cases sont cochées
+  const AddVitaminForm({this.initialType, super.key});
 
   @override
   State<AddVitaminForm> createState() => _AddVitaminFormState();
@@ -13,6 +14,9 @@ class _AddVitaminFormState extends State<AddVitaminForm> {
   int _selectedHour = TimeOfDay.now().hour;
   int _selectedMinute = (TimeOfDay.now().minute ~/ 5) * 5;
   DateTime _selectedDate = DateTime.now();
+  // Deux cases : Fer et Vitamine D, cochées par défaut
+  bool _ironChecked = true;
+  bool _vdChecked = true;
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -49,19 +53,48 @@ class _AddVitaminFormState extends State<AddVitaminForm> {
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+    // Par défaut : les deux cochées. Si initialType est fourni, ne coche que ce type.
+    if (widget.initialType == 'iron') {
+      _ironChecked = true;
+      _vdChecked = false;
+    } else if (widget.initialType == 'vitamin_d') {
+      _ironChecked = false;
+      _vdChecked = true;
+    } else {
+      _ironChecked = true;
+      _vdChecked = true;
+    }
+  }
+
   void _submit() {
-    // Ajout dans la base de données Firestore
+    // Ajout dans la base de données Firestore : crée un document par type coché
     CollectionReference vitaminRef = FirebaseFirestore.instance.collection('Vitamin');
-    vitaminRef.add({
-      'date': DateTime(
-        _selectedDate.year,
-        _selectedDate.month,
-        _selectedDate.day,
-        _selectedHour,
-        _selectedMinute,
-      ),
-    });
-    Navigator.of(context).pop();
+    final dateValue = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      _selectedHour,
+      _selectedMinute,
+    );
+
+    final futures = <Future<DocumentReference>>[];
+    if (_ironChecked) {
+      futures.add(vitaminRef.add({'date': dateValue, 'type': 'iron'}));
+    }
+    if (_vdChecked) {
+      futures.add(vitaminRef.add({'date': dateValue, 'type': 'vitamin_d'}));
+    }
+
+    // Si aucune case cochée, on ne fait rien (on peut afficher un message)
+    if (futures.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sélectionne au moins un type')));
+      return;
+    }
+
+    Future.wait(futures).then((_) => Navigator.of(context).pop());
   }
 
   @override
@@ -101,6 +134,30 @@ class _AddVitaminFormState extends State<AddVitaminForm> {
               ),
 
               SizedBox(height: 8),
+
+              // Cases à cocher pour sélectionner les types à ajouter (par défaut les deux cochées)
+              Column(
+                children: [
+                  CheckboxListTile(
+                    title: const Text('Fer'),
+                    value: _ironChecked,
+                    onChanged: (v) {
+                      setState(() {
+                        _ironChecked = v ?? false;
+                      });
+                    },
+                  ),
+                  CheckboxListTile(
+                    title: const Text('Vitamine D'),
+                    value: _vdChecked,
+                    onChanged: (v) {
+                      setState(() {
+                        _vdChecked = v ?? false;
+                      });
+                    },
+                  ),
+                ],
+              ),
 
               // Sélection de l'heure
               Text('Sélectionne l\'heure', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),

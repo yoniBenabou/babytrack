@@ -7,6 +7,7 @@ import 'edit_vitamin_form.dart';
 class VitaminCard extends StatelessWidget {
   final String vitaminDate;
   final String vitaminTime;
+  final String type; // 'iron' or 'vitamin_d'
   final double cardFontSize;
   final double cardIconSize;
   final DocumentSnapshot? vitaminDoc;
@@ -14,6 +15,7 @@ class VitaminCard extends StatelessWidget {
   const VitaminCard({
     required this.vitaminDate,
     required this.vitaminTime,
+    required this.type,
     required this.cardFontSize,
     required this.cardIconSize,
     this.vitaminDoc,
@@ -23,8 +25,14 @@ class VitaminCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color cardColor = isToday ? Colors.green.shade100 : Colors.red.shade100;
-    final Color avatarColor = isToday ? Colors.green.shade300 : Colors.red.shade300;
+    // Choix des couleurs et du texte selon le type
+    final bool isIron = type == 'iron';
+    final Color cardColor = isToday ? Colors.green.shade50 : (isIron ? Colors.red.shade50 : Colors.orange.shade50);
+    final Color avatarColor = isToday ? Colors.green.shade300 : (isIron ? Colors.red.shade300 : Colors.orange.shade300);
+    final String label = isIron ? 'Dernier Fer le' : 'Dernière Vitamine D le';
+    final Widget avatarChild = isIron
+        ? Text('Fe', style: TextStyle(fontSize: cardIconSize * 0.7, fontWeight: FontWeight.bold))
+        : Text('D', style: TextStyle(fontSize: cardIconSize * 0.9, fontWeight: FontWeight.bold));
     return Card(
       color: cardColor,
       elevation: 3,
@@ -35,7 +43,7 @@ class VitaminCard extends StatelessWidget {
           children: [
             CircleAvatar(
               backgroundColor: avatarColor,
-              child: Text('💊', style: TextStyle(fontSize: cardIconSize*0.9)),
+              child: avatarChild,
             ),
             SizedBox(width: SizeConfig.text(context, 0.03)),
             Expanded(
@@ -50,7 +58,7 @@ class VitaminCard extends StatelessWidget {
                       }
                     : null,
                 child: Text(
-                  'Dernière vitamine le $vitaminDate à $vitaminTime',
+                  '$label $vitaminDate à $vitaminTime',
                   style: TextStyle(fontSize: cardFontSize),
                 ),
               ),
@@ -64,7 +72,7 @@ class VitaminCard extends StatelessWidget {
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
-                    builder: (ctx) => const AddVitaminForm(),
+                    builder: (ctx) => AddVitaminForm(initialType: type),
                   );
                 },
               ),

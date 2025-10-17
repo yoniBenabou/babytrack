@@ -14,6 +14,7 @@ class _EditVitaminFormState extends State<EditVitaminForm> {
   late int _selectedHour;
   late int _selectedMinute;
   late DateTime _selectedDate;
+  late String _selectedType;
 
   @override
   void initState() {
@@ -22,6 +23,8 @@ class _EditVitaminFormState extends State<EditVitaminForm> {
     _selectedDate = DateTime(date.year, date.month, date.day);
     _selectedHour = date.hour;
     _selectedMinute = date.minute;
+    // Récupère le type existant, sinon 'iron' par défaut
+    _selectedType = (widget.vitaminDoc.data() as Map<String, dynamic>?)?['type'] as String? ?? 'iron';
   }
 
   Future<void> _pickDate() async {
@@ -65,6 +68,7 @@ class _EditVitaminFormState extends State<EditVitaminForm> {
         _selectedHour,
         _selectedMinute,
       ),
+      'type': _selectedType,
     });
     Navigator.of(context).pop();
   }
@@ -102,6 +106,27 @@ class _EditVitaminFormState extends State<EditVitaminForm> {
                   ),
                 ],
               ),
+              SizedBox(height: 8),
+
+              // Sélection du type
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Type : ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 8),
+                  DropdownButton<String>(
+                    value: _selectedType,
+                    items: const [
+                      DropdownMenuItem(value: 'iron', child: Text('Fer')),
+                      DropdownMenuItem(value: 'vitamin_d', child: Text('Vitamine D')),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) setState(() => _selectedType = v);
+                    },
+                  ),
+                ],
+              ),
+
               SizedBox(height: 8),
               Text('Sélectionne l\'heure', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),

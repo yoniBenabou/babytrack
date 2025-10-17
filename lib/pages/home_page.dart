@@ -4,6 +4,7 @@ import '../utils/size_config.dart';
 import '../widgets/bottles_card.dart';
 import '../widgets/poop_card.dart';
 import '../widgets/vitamin_card.dart';
+import '../widgets/vitamins_card.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -102,41 +103,56 @@ class HomePage extends StatelessWidget {
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance.collection('Vitamin').snapshots(),
                   builder: (context, snapshot) {
-                    String vitaminDate = 'Aucune';
-                    String vitaminTime = '';
-                    List<DocumentSnapshot> sortedDocs = [];
-                    bool isToday = false;
+                    // Préparer les documents par type, compatibilité pour les docs sans 'type' -> 'iron'
+                    DocumentSnapshot? ironDoc;
+                    bool ironIsToday = false;
+                    DocumentSnapshot? vdDoc;
+                    bool vdIsToday = false;
 
                     if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
                       final docs = snapshot.data!.docs;
-                      // Trier par date décroissante pour avoir la plus récente
-                      sortedDocs = docs.toList();
-                      sortedDocs.sort((a, b) {
-                        final dataA = a.data() as Map<String, dynamic>;
-                        final dataB = b.data() as Map<String, dynamic>;
-                        final dateA = dataA['date'] is DateTime ? dataA['date'] : (dataA['date'] as dynamic).toDate();
-                        final dateB = dataB['date'] is DateTime ? dataB['date'] : (dataB['date'] as dynamic).toDate();
-                        return dateB.compareTo(dateA);
-                      });
+                      final ironDocs = docs.where((d) {
+                        final data = d.data() as Map<String, dynamic>?;
+                        final t = data?['type'] as String?;
+                        return t == null || t == 'iron';
+                      }).toList();
 
-                      if (sortedDocs.isNotEmpty) {
-                        final lastVitaminDoc = sortedDocs.first;
-                        final lastVitamin = lastVitaminDoc.data() as Map<String, dynamic>;
-                        final date = lastVitamin['date'] is DateTime ? lastVitamin['date'] : (lastVitamin['date'] as dynamic).toDate();
-                        vitaminDate = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
-                        vitaminTime = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+                      final vdDocs = docs.where((d) {
+                        final data = d.data() as Map<String, dynamic>?;
+                        final t = data?['type'] as String?;
+                        return t == 'vitamin_d';
+                      }).toList();
+
+                      DateTime _getDate(DocumentSnapshot d) {
+                        final data = d.data() as Map<String, dynamic>;
+                        final ts = data['date'];
+                        return ts is DateTime ? ts : (ts as dynamic).toDate();
+                      }
+
+                      if (ironDocs.isNotEmpty) {
+                        ironDocs.sort((a, b) => _getDate(b).compareTo(_getDate(a)));
+                        ironDoc = ironDocs.first;
+                        final dt = _getDate(ironDoc);
                         final now = DateTime.now();
-                        isToday = date.year == now.year && date.month == now.month && date.day == now.day;
+                        ironIsToday = dt.year == now.year && dt.month == now.month && dt.day == now.day;
+                      }
+
+                      if (vdDocs.isNotEmpty) {
+                        vdDocs.sort((a, b) => _getDate(b).compareTo(_getDate(a)));
+                        vdDoc = vdDocs.first;
+                        final dt = _getDate(vdDoc);
+                        final now = DateTime.now();
+                        vdIsToday = dt.year == now.year && dt.month == now.month && dt.day == now.day;
                       }
                     }
 
-                    return VitaminCard(
-                      vitaminDate: vitaminDate,
-                      vitaminTime: vitaminTime,
+                    return VitaminsCard(
+                      ironDoc: ironDoc,
+                      vdDoc: vdDoc,
+                      ironIsToday: ironIsToday,
+                      vdIsToday: vdIsToday,
                       cardFontSize: cardFontSize,
                       cardIconSize: cardIconSize,
-                      vitaminDoc: sortedDocs.isNotEmpty ? sortedDocs.first : null,
-                      isToday: isToday,
                     );
                   },
                 ),
