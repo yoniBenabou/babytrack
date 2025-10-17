@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'cyclic_hour_minute_picker.dart';
 
 class AddBottleForm extends StatefulWidget {
@@ -14,6 +15,8 @@ class _AddBottleFormState extends State<AddBottleForm> {
   int _selectedHour = TimeOfDay.now().hour;
   int _selectedMinute = (TimeOfDay.now().minute ~/ 5) * 5;
   DateTime _selectedDate = DateTime.now();
+  int _minLimit = 10;
+  int _maxLimit = 210;
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -50,12 +53,36 @@ class _AddBottleFormState extends State<AddBottleForm> {
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _loadLimits();
+  }
+
+  Future<void> _loadLimits() async {
+    final prefs = await SharedPreferences.getInstance();
+    final min = prefs.getInt('bottleMin') ?? 10;
+    final max = prefs.getInt('bottleMax') ?? 210;
+    // ensure sensible defaults
+    final safeMin = min > 0 ? min : 10;
+    final safeMax = max > safeMin ? max : (safeMin + 200);
+    setState(() {
+      _minLimit = safeMin;
+      _maxLimit = safeMax;
+      // clamp _amount into range
+      if (_amount < _minLimit) _amount = _minLimit.toDouble();
+      if (_amount > _maxLimit) _amount = _maxLimit.toDouble();
+    });
+  }
+
   void _submit() {
     //ajout dans la base de données
     CollectionReference biberonRef = FirebaseFirestore.instance.collection(
         'Biberon');
+    // clamp quantity and convert to int
+    final qty = _amount.clamp(_minLimit.toDouble(), _maxLimit.toDouble()).toInt();
     biberonRef.add({
-      'quantity': _amount.toInt(),
+      'quantity': qty,
       'date': DateTime(_selectedDate.year,
           _selectedDate.month,
           _selectedDate.day,
@@ -85,13 +112,17 @@ class _AddBottleFormState extends State<AddBottleForm> {
               Text('${_amount.toInt()} ml', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blue)),
               Slider(
                 value: _amount,
-                min: 10,
-                max: 210,
-                divisions: 20,
+                min: _minLimit.toDouble(),
+                max: _maxLimit.toDouble(),
+                divisions: ((_maxLimit - _minLimit) ~/ 10).clamp(1, 1000),
                 label: '${_amount.toInt()} ml',
                 onChanged: (value) {
                   setState(() {
-                    _amount = (value/10).round()*10;
+                    // round to nearest 10
+                    final rounded = (value / 10).round() * 10;
+                    // clamp between min and max
+                    final clamped = rounded.clamp(_minLimit, _maxLimit).toDouble();
+                    _amount = clamped;
                   });
                 },
               ),

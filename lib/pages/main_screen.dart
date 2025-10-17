@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../utils/size_config.dart';
 import 'home_page.dart';
 import 'statistics_page.dart';
+import '../widgets/bottle_settings_form.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -43,8 +44,20 @@ class _MainScreenState extends State<MainScreen> {
           IconButton(
             icon: const Text('⚙️', style: TextStyle(fontSize: 28)),
             tooltip: 'Paramètres',
-            onPressed: () {
-              // Action à définir
+            onPressed: () async {
+              final saved = await showModalBottomSheet<bool>(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                builder: (_) => const BottleSettingsForm(),
+              );
+
+              if (saved == true) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Paramètres biberon mis à jour')));
+                setState(() {
+                  // trigger rebuild if needed
+                });
+              }
             },
           ),
         ],
