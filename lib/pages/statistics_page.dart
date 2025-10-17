@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../utils/constants.dart';
-import 'bottles_last7_page.dart';
 import 'bottles_by_day_page.dart' as day_page;
 
 class StatisticsPage extends StatelessWidget {
@@ -102,17 +101,6 @@ class StatisticsPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const BottlesLast7Page()));
-                        },
-                        icon: const Icon(Icons.list),
-                        label: const Text('Voir tous les biberons'),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
                     // Grande carte d'historique sur 7 jours avec mini-barres
                     Card(
                       color: Colors.blue.shade50,
