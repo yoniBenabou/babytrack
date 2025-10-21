@@ -6,8 +6,19 @@ import '../widgets/poop_card.dart';
 import '../widgets/vitamin_card.dart';
 import '../widgets/vitamins_card.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  String _selectedBebe = 'bébé 1';
+
+  String get _biberonCollection => _selectedBebe == 'bébé 1' ? 'Biberon' : 'Biberon_bebe2';
+  String get _poopCollection => _selectedBebe == 'bébé 1' ? 'Poop' : 'Poop_bebe2';
+  String get _vitaminCollection => _selectedBebe == 'bébé 1' ? 'Vitamin' : 'Vitamin_bebe2';
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +32,33 @@ class HomePage extends StatelessWidget {
         child: SizedBox.expand(
           child: Column(
             children: [
+              Row(
+                children: [
+                  Text('Sélectionnez le bébé : ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  SizedBox(width: 12),
+                  DropdownButton<String>(
+                    value: _selectedBebe,
+                    items: ['bébé 1', 'bébé 2']
+                        .map((bebe) => DropdownMenuItem<String>(
+                              value: bebe,
+                              child: Text(bebe),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedBebe = value;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+              SizedBox(height: cardSpace),
               Expanded(
                 flex: 4,
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('Biberon').snapshots(),
+                  stream: FirebaseFirestore.instance.collection(_biberonCollection).snapshots(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return Center(child: CircularProgressIndicator());
@@ -52,6 +86,7 @@ class HomePage extends StatelessWidget {
                       cardFontSize: cardFontSize,
                       cardIconSize: cardIconSize,
                       totalJournalier: totalJournalier,
+                      selectedBebe: _selectedBebe,
                     );
                   },
                 ),
@@ -60,7 +95,7 @@ class HomePage extends StatelessWidget {
               Expanded(
                 flex: 1,
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('Poop').snapshots(),
+                  stream: FirebaseFirestore.instance.collection(_poopCollection).snapshots(),
                   builder: (context, snapshot) {
                     String poopDate = 'Aucun';
                     String poopTime = '';
@@ -93,6 +128,7 @@ class HomePage extends StatelessWidget {
                       cardFontSize: cardFontSize,
                       cardIconSize: cardIconSize,
                       poopDoc: sortedDocs.isNotEmpty ? sortedDocs.first : null,
+                      selectedBebe: _selectedBebe,
                     );
                   },
                 ),
@@ -101,7 +137,7 @@ class HomePage extends StatelessWidget {
               Expanded(
                 flex: 1,
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('Vitamin').snapshots(),
+                  stream: FirebaseFirestore.instance.collection(_vitaminCollection).snapshots(),
                   builder: (context, snapshot) {
                     // Préparer les documents par type, compatibilité pour les docs sans 'type' -> 'iron'
                     DocumentSnapshot? ironDoc;
@@ -153,6 +189,7 @@ class HomePage extends StatelessWidget {
                       vdIsToday: vdIsToday,
                       cardFontSize: cardFontSize,
                       cardIconSize: cardIconSize,
+                      selectedBebe: _selectedBebe,
                     );
                   },
                 ),

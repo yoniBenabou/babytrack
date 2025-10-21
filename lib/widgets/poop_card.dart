@@ -10,12 +10,14 @@ class PoopCard extends StatelessWidget {
   final double cardFontSize;
   final double cardIconSize;
   final DocumentSnapshot? poopDoc;
+  final String selectedBebe;
   const PoopCard({
     required this.poopDate,
     required this.poopTime,
     required this.cardFontSize,
     required this.cardIconSize,
     this.poopDoc,
+    required this.selectedBebe,
     super.key,
   });
 
@@ -41,7 +43,7 @@ class PoopCard extends StatelessWidget {
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
-                          builder: (ctx) => EditPoopForm(poopDoc: poopDoc!),
+                          builder: (ctx) => EditPoopForm(poopDoc: poopDoc!, selectedBebe: selectedBebe),
                         );
                       }
                     : null,
@@ -60,7 +62,7 @@ class PoopCard extends StatelessWidget {
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
-                    builder: (ctx) => const AddPoopForm(),
+                    builder: (ctx) => AddPoopForm(selectedBebe: selectedBebe),
                   );
                 },
               ),

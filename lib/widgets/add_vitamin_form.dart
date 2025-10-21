@@ -4,7 +4,8 @@ import 'cyclic_hour_minute_picker.dart';
 
 class AddVitaminForm extends StatefulWidget {
   final String? initialType; // conservé pour compatibilité, mais par défaut les deux cases sont cochées
-  const AddVitaminForm({this.initialType, super.key});
+  final String selectedBebe;
+  const AddVitaminForm({this.initialType, required this.selectedBebe, super.key});
 
   @override
   State<AddVitaminForm> createState() => _AddVitaminFormState();
@@ -69,32 +70,28 @@ class _AddVitaminFormState extends State<AddVitaminForm> {
     }
   }
 
-  void _submit() {
-    // Ajout dans la base de données Firestore : crée un document par type coché
-    CollectionReference vitaminRef = FirebaseFirestore.instance.collection('Vitamin');
-    final dateValue = DateTime(
-      _selectedDate.year,
-      _selectedDate.month,
-      _selectedDate.day,
-      _selectedHour,
-      _selectedMinute,
-    );
+  String get _vitaminCollection => widget.selectedBebe == 'bébé 1' ? 'Vitamin' : 'Vitamin_bebe2';
 
-    final futures = <Future<DocumentReference>>[];
-    if (_ironChecked) {
-      futures.add(vitaminRef.add({'date': dateValue, 'type': 'iron'}));
+  void _submit() async {
+    try {
+      if (_ironChecked) {
+        await FirebaseFirestore.instance.collection(_vitaminCollection).add({
+          'type': 'iron',
+          'date': DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute),
+        });
+      }
+      if (_vdChecked) {
+        await FirebaseFirestore.instance.collection(_vitaminCollection).add({
+          'type': 'vitamin_d',
+          'date': DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute),
+        });
+      }
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de l\'ajout : $e')));
     }
-    if (_vdChecked) {
-      futures.add(vitaminRef.add({'date': dateValue, 'type': 'vitamin_d'}));
-    }
-
-    // Si aucune case cochée, on ne fait rien (on peut afficher un message)
-    if (futures.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sélectionne au moins un type')));
-      return;
-    }
-
-    Future.wait(futures).then((_) => Navigator.of(context).pop());
   }
 
   @override

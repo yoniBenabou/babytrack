@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'cyclic_hour_minute_picker.dart';
 
 class AddPoopForm extends StatefulWidget {
-  const AddPoopForm({super.key});
+  final String selectedBebe;
+
+  const AddPoopForm({super.key, required this.selectedBebe});
 
   @override
   State<AddPoopForm> createState() => _AddPoopFormState();
@@ -14,6 +16,8 @@ class _AddPoopFormState extends State<AddPoopForm> {
   int _selectedMinute = (TimeOfDay.now().minute ~/ 5) * 5;
   DateTime _selectedDate = DateTime.now();
   String? _notes;
+
+  String get _poopCollection => widget.selectedBebe == 'bébé 1' ? 'Poop' : 'Poop_bebe2';
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -50,20 +54,18 @@ class _AddPoopFormState extends State<AddPoopForm> {
     }
   }
 
-  void _submit() {
-    // Ajout dans la base de données Firestore
-    CollectionReference poopRef = FirebaseFirestore.instance.collection('Poop');
-    poopRef.add({
-      'notes': _notes,
-      'date': DateTime(
-        _selectedDate.year,
-        _selectedDate.month,
-        _selectedDate.day,
-        _selectedHour,
-        _selectedMinute,
-      ),
-    });
-    Navigator.of(context).pop();
+  void _submit() async {
+    try {
+      await FirebaseFirestore.instance.collection(_poopCollection).add({
+        'date': DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute),
+        'notes': _notes,
+      });
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de l\'ajout : $e')));
+    }
   }
 
   @override

@@ -4,7 +4,8 @@ import 'cyclic_hour_minute_picker.dart';
 
 class EditVitaminForm extends StatefulWidget {
   final DocumentSnapshot vitaminDoc;
-  const EditVitaminForm({required this.vitaminDoc, super.key});
+  final String selectedBebe;
+  const EditVitaminForm({required this.vitaminDoc, required this.selectedBebe, super.key});
 
   @override
   State<EditVitaminForm> createState() => _EditVitaminFormState();
@@ -59,18 +60,20 @@ class _EditVitaminFormState extends State<EditVitaminForm> {
     }
   }
 
+  String get _vitaminCollection => widget.selectedBebe == 'bébé 1' ? 'Vitamin' : 'Vitamin_bebe2';
+
   void _submit() async {
-    await widget.vitaminDoc.reference.update({
-      'date': DateTime(
-        _selectedDate.year,
-        _selectedDate.month,
-        _selectedDate.day,
-        _selectedHour,
-        _selectedMinute,
-      ),
-      'type': _selectedType,
-    });
-    Navigator.of(context).pop();
+    try {
+      await FirebaseFirestore.instance.collection(_vitaminCollection).doc(widget.vitaminDoc.id).update({
+        'type': _selectedType,
+        'date': DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute),
+      });
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de l\'enregistrement : $e')));
+    }
   }
 
   @override
@@ -162,8 +165,14 @@ class _EditVitaminFormState extends State<EditVitaminForm> {
                 icon: Icon(Icons.delete, color: Colors.white),
                 label: Text('Supprimer', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 onPressed: () async {
-                  await widget.vitaminDoc.reference.delete();
-                  Navigator.of(context).pop();
+                  try {
+                    await FirebaseFirestore.instance.collection(_vitaminCollection).doc(widget.vitaminDoc.id).delete();
+                    if (!mounted) return;
+                    Navigator.of(context).pop(true);
+                  } catch (e) {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de la suppression : $e')));
+                  }
                 },
                 style: TextButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),

@@ -7,7 +7,8 @@ class BottlesCard extends StatelessWidget {
   final List<Map<String, dynamic>> bottles;
   final double cardFontSize;
   final double cardIconSize;
-  const BottlesCard({required this.bottles, required this.cardFontSize, required this.cardIconSize, this.totalJournalier, super.key});
+  final String selectedBebe;
+  const BottlesCard({required this.bottles, required this.cardFontSize, required this.cardIconSize, this.totalJournalier, required this.selectedBebe, super.key});
   final int? totalJournalier;
 
   @override
@@ -39,7 +40,7 @@ class BottlesCard extends StatelessWidget {
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
-                          builder: (ctx) => const AddBottleForm(),
+                          builder: (ctx) => AddBottleForm(selectedBebe: selectedBebe),
                         );
                       },
                     ),
@@ -65,10 +66,11 @@ class BottlesCard extends StatelessWidget {
                     context: context,
                     isScrollControlled: true,
                     builder: (ctx) => EditBottleForm(
-                      bottleId: bottle["id"],
-                      initialQuantity: bottle["quantity"] ?? 0,
+                      bottleId: bottle['id'],
+                      initialQuantity: bottle['quantity'],
                       initialHour: dt.hour,
                       initialMinute: dt.minute,
+                      selectedBebe: selectedBebe,
                     ),
                   );
                 },

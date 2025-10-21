@@ -4,7 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'cyclic_hour_minute_picker.dart';
 
 class AddBottleForm extends StatefulWidget {
-  const AddBottleForm({super.key});
+  final String selectedBebe;
+
+  const AddBottleForm({super.key, required this.selectedBebe});
 
   @override
   State<AddBottleForm> createState() => _AddBottleFormState();
@@ -17,6 +19,8 @@ class _AddBottleFormState extends State<AddBottleForm> {
   DateTime _selectedDate = DateTime.now();
   int _minLimit = 10;
   int _maxLimit = 210;
+
+  String get _biberonCollection => widget.selectedBebe == 'bébé 1' ? 'Biberon' : 'Biberon_bebe2';
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -75,21 +79,18 @@ class _AddBottleFormState extends State<AddBottleForm> {
     });
   }
 
-  void _submit() {
-    //ajout dans la base de données
-    CollectionReference biberonRef = FirebaseFirestore.instance.collection(
-        'Biberon');
-    // clamp quantity and convert to int
-    final qty = _amount.clamp(_minLimit.toDouble(), _maxLimit.toDouble()).toInt();
-    biberonRef.add({
-      'quantity': qty,
-      'date': DateTime(_selectedDate.year,
-          _selectedDate.month,
-          _selectedDate.day,
-          _selectedHour,
-          _selectedMinute),
-    });
-    Navigator.of(context).pop();
+  void _submit() async {
+    try {
+      await FirebaseFirestore.instance.collection(_biberonCollection).add({
+        'quantity': _amount.toInt(),
+        'date': DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute),
+      });
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de l\'ajout : $e')));
+    }
   }
 
   @override

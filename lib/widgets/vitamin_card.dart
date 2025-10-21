@@ -12,6 +12,7 @@ class VitaminCard extends StatelessWidget {
   final double cardIconSize;
   final DocumentSnapshot? vitaminDoc;
   final bool isToday;
+  final String selectedBebe;
   const VitaminCard({
     required this.vitaminDate,
     required this.vitaminTime,
@@ -20,6 +21,7 @@ class VitaminCard extends StatelessWidget {
     required this.cardIconSize,
     this.vitaminDoc,
     required this.isToday,
+    required this.selectedBebe,
     super.key,
   });
 
@@ -53,7 +55,7 @@ class VitaminCard extends StatelessWidget {
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
-                          builder: (ctx) => EditVitaminForm(vitaminDoc: vitaminDoc!),
+                          builder: (ctx) => EditVitaminForm(vitaminDoc: vitaminDoc!, selectedBebe: selectedBebe),
                         );
                       }
                     : null,
@@ -66,13 +68,13 @@ class VitaminCard extends StatelessWidget {
             CircleAvatar(
               backgroundColor: avatarColor,
               child: IconButton(
-                icon: Icon(Icons.add, color: Colors.white, size: cardIconSize*0.9),
+                icon: Icon(Icons.add, color: Colors.green, size: cardIconSize * 0.9),
                 tooltip: 'Ajouter une vitamine',
                 onPressed: () {
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
-                    builder: (ctx) => AddVitaminForm(initialType: type),
+                    builder: (ctx) => AddVitaminForm(initialType: type, selectedBebe: selectedBebe),
                   );
                 },
               ),

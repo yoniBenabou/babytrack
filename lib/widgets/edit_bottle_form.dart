@@ -7,6 +7,7 @@ class EditBottleForm extends StatefulWidget {
   final int initialQuantity;
   final int initialHour;
   final int initialMinute;
+  final String selectedBebe; // 'bébé 1' ou 'bébé 2'
 
   const EditBottleForm({
     super.key,
@@ -14,6 +15,7 @@ class EditBottleForm extends StatefulWidget {
     required this.initialQuantity,
     required this.initialHour,
     required this.initialMinute,
+    required this.selectedBebe,
   });
 
   @override
@@ -70,18 +72,21 @@ class _EditBottleFormState extends State<EditBottleForm> {
     }
   }
 
+  String get _biberonCollection => widget.selectedBebe == 'bébé 1' ? 'Biberon' : 'Biberon_bebe2';
+
   void _submit() async {
-    // Mise à jour dans la base de données
-    await FirebaseFirestore.instance.collection('Biberon').doc(widget.bottleId).update({
-      'quantity': _amount.toInt(),
-      'date': DateTime(_selectedDate.year,
-          _selectedDate.month,
-          _selectedDate.day,
-          _selectedHour,
-          _selectedMinute),
-    });
-    if (!mounted) return;
-    Navigator.of(context).pop();
+    // Mise à jour dans la base de données avec gestion d'erreur
+    try {
+      await FirebaseFirestore.instance.collection(_biberonCollection).doc(widget.bottleId).update({
+        'quantity': _amount.toInt(),
+        'date': DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute),
+      });
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de l\'enregistrement : $e')));
+    }
   }
 
   @override
@@ -164,8 +169,14 @@ class _EditBottleFormState extends State<EditBottleForm> {
                 icon: Icon(Icons.delete, color: Colors.white),
                 label: Text('Supprimer', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 onPressed: () async {
-                  await FirebaseFirestore.instance.collection('Biberon').doc(widget.bottleId).delete();
-                  Navigator.of(context).pop();
+                  try {
+                    await FirebaseFirestore.instance.collection(_biberonCollection).doc(widget.bottleId).delete();
+                    if (!mounted) return;
+                    Navigator.of(context).pop(true);
+                  } catch (e) {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de la suppression : $e')));
+                  }
                 },
                 style: TextButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
