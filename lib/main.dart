@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
-import 'pages/main_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/welcome_page.dart';
+import 'pages/main_screen.dart';
+
 
 void main() async {
-
+  // Ensure Flutter bindings are initialized before any async code
   WidgetsFlutterBinding.ensureInitialized();
+  // Initialize Firebase with platform-specific options
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Lire le flag de première ouverture depuis SharedPreferences
+  // Read the 'seenWelcome' flag from local storage
   final prefs = await SharedPreferences.getInstance();
   final seenWelcome = prefs.getBool('seenWelcome') ?? false;
 
+  // Launch the app, passing whether to show the welcome page or not
   runApp(BabyTrackApp(showWelcome: !seenWelcome));
 }
 
@@ -27,9 +30,9 @@ class BabyTrackApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'BabyTrack',
-      // Si c'est la première ouverture, montrer la page Welcome
+      // Show WelcomePage if first launch, otherwise show MainScreen
       home: showWelcome ? const WelcomePage() : const MainScreen(),
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: false, // Hide the debug banner
     );
   }
 }
