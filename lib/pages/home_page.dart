@@ -14,11 +14,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String _selectedBebe = 'bébé 1';
+  String _selectedBaby = 'bébé 1';
 
-  String get _biberonCollection => _selectedBebe == 'bébé 1' ? 'Biberon' : 'Biberon_bebe2';
-  String get _poopCollection => _selectedBebe == 'bébé 1' ? 'Poop' : 'Poop_bebe2';
-  String get _vitaminCollection => _selectedBebe == 'bébé 1' ? 'Vitamin' : 'Vitamin_bebe2';
+  String get _biberonCollection => _selectedBaby == 'bébé 1' ? 'Biberon' : 'Biberon_bebe2';
+  String get _poopCollection => _selectedBaby == 'bébé 1' ? 'Poop' : 'Poop_bebe2';
+  String get _vitaminCollection => _selectedBaby == 'bébé 1' ? 'Vitamin' : 'Vitamin_bebe2';
 
   @override
   Widget build(BuildContext context) {
@@ -32,29 +32,7 @@ class _HomePageState extends State<HomePage> {
         child: SizedBox.expand(
           child: Column(
             children: [
-              Row(
-                children: [
-                  Text('Sélectionnez le bébé : ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  SizedBox(width: 12),
-                  DropdownButton<String>(
-                    value: _selectedBebe,
-                    items: ['bébé 1', 'bébé 2']
-                        .map((bebe) => DropdownMenuItem<String>(
-                              value: bebe,
-                              child: Text(bebe),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedBebe = value;
-                        });
-                      }
-                    },
-                  ),
-                ],
-              ),
-              SizedBox(height: cardSpace),
+
               Expanded(
                 flex: 4,
                 child: StreamBuilder<QuerySnapshot>(
@@ -86,7 +64,7 @@ class _HomePageState extends State<HomePage> {
                       cardFontSize: cardFontSize,
                       cardIconSize: cardIconSize,
                       totalJournalier: totalJournalier,
-                      selectedBebe: _selectedBebe,
+                      selectedBebe: _selectedBaby,
                     );
                   },
                 ),
@@ -128,7 +106,7 @@ class _HomePageState extends State<HomePage> {
                       cardFontSize: cardFontSize,
                       cardIconSize: cardIconSize,
                       poopDoc: sortedDocs.isNotEmpty ? sortedDocs.first : null,
-                      selectedBebe: _selectedBebe,
+                      selectedBebe: _selectedBaby,
                     );
                   },
                 ),
@@ -189,7 +167,7 @@ class _HomePageState extends State<HomePage> {
                       vdIsToday: vdIsToday,
                       cardFontSize: cardFontSize,
                       cardIconSize: cardIconSize,
-                      selectedBebe: _selectedBebe,
+                      selectedBebe: _selectedBaby,
                     );
                   },
                 ),
