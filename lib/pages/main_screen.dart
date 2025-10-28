@@ -14,7 +14,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  // stocke id of selected baby
+  // stock id of selected baby
   String _selectedBaby = '';
   // list of id of baby from Users/.../babyIds
   List<String> _babyList = [];
@@ -36,15 +36,15 @@ class _MainScreenState extends State<MainScreen> {
         if (data != null && data['babyIds'] is List) {
           final ids = (data['babyIds'] as List).map((e) => e?.toString() ?? '').where((s) => s.isNotEmpty).toList();
           if (ids.isNotEmpty) {
-            // récupérer les firstName pour chaque id depuis la collection 'Babies'
+            // collect firstName for each id from collection 'Babies'
             final Map<String, String> names = {};
             await Future.wait(ids.map((id) async {
               try {
                 final babyDoc = await FirebaseFirestore.instance.collection('Babies').doc(id).get();
                 if (babyDoc.exists) {
                   final babyData = babyDoc.data();
-                  final fname = (babyData != null && babyData['firstName'] != null) ? babyData['firstName'].toString() : id;
-                  names[id] = fname;
+                  final firstName = (babyData != null && babyData['firstName'] != null) ? babyData['firstName'].toString() : id;
+                  names[id] = firstName;
                 } else {
                   names[id] = id;
                 }
@@ -71,10 +71,11 @@ class _MainScreenState extends State<MainScreen> {
     // TO DO: handle no babies case
   }
 
-  final List<Widget> _pages = [
-    const HomePage(),
-    const StatisticsPage(),
-  ];
+  // Build pages dynamically so we can pass the currently selected baby id/name
+  List<Widget> get _pages => [
+        HomePage(selectedBaby: _selectedBaby),
+        StatisticsPage(selectedBaby: _selectedBaby),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +83,6 @@ class _MainScreenState extends State<MainScreen> {
     final double appBarIconSize = SizeConfig.icon(context, 0.09);
     final double navBarFontSize = SizeConfig.text(context, 0.055);
     final double navBarIconSize = SizeConfig.icon(context, 0.09);
-    final double navBarHeight = SizeConfig.vertical(context, 0.11);
 
     return Scaffold(
       appBar: AppBar(
@@ -90,6 +90,14 @@ class _MainScreenState extends State<MainScreen> {
             ? const SizedBox(width: 120, height: 24, child: Center(child: CircularProgressIndicator(strokeWidth: 2)))
             : DropdownButton<String>(
                 value: _selectedBaby.isNotEmpty ? _selectedBaby : null,
+                isExpanded: true,
+                // Use selectedItemBuilder to customize how the selected value is displayed
+                selectedItemBuilder: (BuildContext context) => _babyList
+                    .map((id) => Align(
+                          alignment: Alignment.center,
+                          child: Text(_babyNames[id] ?? id, style: TextStyle(fontSize: appBarFontSize)),
+                        ))
+                    .toList(),
                 items: _babyList
                     .map((id) => DropdownMenuItem<String>(
                           value: id,
@@ -106,7 +114,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
 
         centerTitle: true,
-        toolbarHeight: navBarHeight,
+       // toolbarHeight: navBarHeight,
         leading: Icon(
           _selectedIndex == 0 ? Icons.home : Icons.bar_chart,
           size: appBarIconSize,
@@ -126,11 +134,6 @@ class _MainScreenState extends State<MainScreen> {
                 builder: (_) => const BottleSettingsForm(),
               ).then((saved) {
                 if (!mounted) return;
-                if (saved == true) {
-                  setState(() {
-                    // trigger rebuild if needed
-                  });
-                }
               });
             },
           ),

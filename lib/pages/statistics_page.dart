@@ -5,11 +5,14 @@ import '../utils/constants.dart';
 import 'bottles_by_day_page.dart' as day_page;
 
 class StatisticsPage extends StatelessWidget {
-  const StatisticsPage({super.key});
+  final String selectedBaby;
+
+  const StatisticsPage({super.key, this.selectedBaby = ''});
 
   /// Retourne les totaux journaliers et la moyenne par biberon sur les 7 derniers jours.
   Future<Map<String, dynamic>> getBiberonStatsLast7Days() async {
     final now = DateTime.now();
+    final String collection = selectedBaby == 'bébé 1' || selectedBaby.isEmpty ? 'Biberon' : 'Biberon_bebe2';
     final List<Map<String, dynamic>> dailyTotals = [];
     int totalQuantity = 0;
     int totalCount = 0;
@@ -19,7 +22,7 @@ class StatisticsPage extends StatelessWidget {
       final startOfDay = Timestamp.fromDate(day);
       final endOfDay = Timestamp.fromDate(day.add(const Duration(days: 1)));
       final querySnapshot = await FirebaseFirestore.instance
-          .collection('Biberon')
+          .collection(collection)
           .where('date', isGreaterThanOrEqualTo: startOfDay)
           .where('date', isLessThan: endOfDay)
           .get();
@@ -52,7 +55,7 @@ class StatisticsPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Totaux des 7 derniers jours', style: TextStyle(fontSize: kFontSize, fontWeight: FontWeight.bold)),
+          Text('Totaux des 7 derniers jours - ${selectedBaby.isNotEmpty ? selectedBaby : 'bébé 1'}', style: TextStyle(fontSize: kFontSize, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           // FutureBuilder qui récupère aussi la moyenne par biberon
           Expanded(

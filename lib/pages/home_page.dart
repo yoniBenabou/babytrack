@@ -6,17 +6,36 @@ import '../widgets/poop_card.dart';
 import '../widgets/vitamins_card.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final String selectedBaby;
+
+  const HomePage({super.key, this.selectedBaby = ''});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  String _selectedBaby = 'bébé 1';
+  // Use the selected baby passed from parent if provided, otherwise a default
+  late String _selectedBaby;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedBaby = widget.selectedBaby.isNotEmpty ? widget.selectedBaby : 'bébé 1';
+  }
+
+  @override
+  void didUpdateWidget(covariant HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update internal state when parent changes selectedBaby
+    if (widget.selectedBaby != oldWidget.selectedBaby && widget.selectedBaby.isNotEmpty) {
+      setState(() {
+        _selectedBaby = widget.selectedBaby;
+      });
+    }
+  }
 
   String get _biberonCollection => _selectedBaby == 'bébé 1' ? 'Biberon' : 'Biberon_bebe2';
-  String get _poopCollection => _selectedBaby == 'bébé 1' ? 'Poop' : 'Poop_bebe2';
   String get _vitaminCollection => _selectedBaby == 'bébé 1' ? 'Vitamin' : 'Vitamin_bebe2';
 
   @override
@@ -25,8 +44,7 @@ class _HomePageState extends State<HomePage> {
     final double cardIconSize = SizeConfig.icon(context, 0.07);
     final double cardSpace = SizeConfig.vertical(context, 0.01);
 
-    return Scaffold(
-      body: Padding(
+    return Padding(
         padding: const EdgeInsets.all(16),
         child: SizedBox.expand(
           child: Column(
@@ -71,43 +89,10 @@ class _HomePageState extends State<HomePage> {
               SizedBox(height: cardSpace),
               Expanded(
                 flex: 1,
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection(_poopCollection).snapshots(),
-                  builder: (context, snapshot) {
-                    String poopDate = 'Aucun';
-                    String poopTime = '';
-                    List<DocumentSnapshot> sortedDocs = [];
-
-                    if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-                      final docs = snapshot.data!.docs;
-                      // Trier par date décroissante pour avoir le plus récent
-                      sortedDocs = docs.toList();
-                      sortedDocs.sort((a, b) {
-                        final dataA = a.data() as Map<String, dynamic>;
-                        final dataB = b.data() as Map<String, dynamic>;
-                        final dateA = dataA['date'] is DateTime ? dataA['date'] : (dataA['date'] as dynamic).toDate();
-                        final dateB = dataB['date'] is DateTime ? dataB['date'] : (dataB['date'] as dynamic).toDate();
-                        return dateB.compareTo(dateA);
-                      });
-
-                      if (sortedDocs.isNotEmpty) {
-                        final lastPoopDoc = sortedDocs.first;
-                        final lastPoop = lastPoopDoc.data() as Map<String, dynamic>;
-                        final date = lastPoop['date'] is DateTime ? lastPoop['date'] : (lastPoop['date'] as dynamic).toDate();
-                        poopDate = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
-                        poopTime = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-                      }
-                    }
-
-                    return PoopCard(
-                      poopDate: poopDate,
-                      poopTime: poopTime,
-                      cardFontSize: cardFontSize,
-                      cardIconSize: cardIconSize,
-                      poopDoc: sortedDocs.isNotEmpty ? sortedDocs.first : null,
-                      selectedBebe: _selectedBaby,
-                    );
-                  },
+                child: PoopCard(
+                  cardFontSize: cardFontSize,
+                  cardIconSize: cardIconSize,
+                  selectedBebe: _selectedBaby,
                 ),
               ),
               SizedBox(height: cardSpace),
@@ -174,7 +159,7 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-      ),
+
     );
   }
 }
