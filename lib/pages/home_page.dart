@@ -36,7 +36,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   String get _biberonCollection => _selectedBaby != 'bébé 2' ? 'Biberon' : 'Biberon_bebe2';
-  String get _vitaminCollection => _selectedBaby == 'bébé 1' ? 'Vitamin' : 'Vitamin_bebe2';
 
   @override
   Widget build(BuildContext context) {
@@ -98,62 +97,10 @@ class _HomePageState extends State<HomePage> {
               SizedBox(height: cardSpace),
               Expanded(
                 flex: 56,
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection(_vitaminCollection).snapshots(),
-                  builder: (context, snapshot) {
-                    // Préparer les documents par type, compatibilité pour les docs sans 'type' -> 'iron'
-                    DocumentSnapshot? ironDoc;
-                    bool ironIsToday = false;
-                    DocumentSnapshot? vdDoc;
-                    bool vdIsToday = false;
-
-                    if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-                      final docs = snapshot.data!.docs;
-                      final ironDocs = docs.where((d) {
-                        final data = d.data() as Map<String, dynamic>?;
-                        final t = data?['type'] as String?;
-                        return t == null || t == 'iron';
-                      }).toList();
-
-                      final vdDocs = docs.where((d) {
-                        final data = d.data() as Map<String, dynamic>?;
-                        final t = data?['type'] as String?;
-                        return t == 'vitamin_d';
-                      }).toList();
-
-                      DateTime _getDate(DocumentSnapshot d) {
-                        final data = d.data() as Map<String, dynamic>;
-                        final ts = data['date'];
-                        return ts is DateTime ? ts : (ts as dynamic).toDate();
-                      }
-
-                      if (ironDocs.isNotEmpty) {
-                        ironDocs.sort((a, b) => _getDate(b).compareTo(_getDate(a)));
-                        ironDoc = ironDocs.first;
-                        final dt = _getDate(ironDoc);
-                        final now = DateTime.now();
-                        ironIsToday = dt.year == now.year && dt.month == now.month && dt.day == now.day;
-                      }
-
-                      if (vdDocs.isNotEmpty) {
-                        vdDocs.sort((a, b) => _getDate(b).compareTo(_getDate(a)));
-                        vdDoc = vdDocs.first;
-                        final dt = _getDate(vdDoc);
-                        final now = DateTime.now();
-                        vdIsToday = dt.year == now.year && dt.month == now.month && dt.day == now.day;
-                      }
-                    }
-
-                    return VitaminsCard(
-                      ironDoc: ironDoc,
-                      vdDoc: vdDoc,
-                      ironIsToday: ironIsToday,
-                      vdIsToday: vdIsToday,
-                      cardFontSize: cardFontSize,
-                      cardIconSize: cardIconSize,
-                      selectedBebe: _selectedBaby,
-                    );
-                  },
+                child: VitaminsCard(
+                  cardFontSize: cardFontSize,
+                  cardIconSize: cardIconSize,
+                  selectedBebe: _selectedBaby,
                 ),
               ),
             ],
