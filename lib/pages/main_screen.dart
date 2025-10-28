@@ -115,20 +115,23 @@ class _MainScreenState extends State<MainScreen> {
           IconButton(
             icon: const Text('⚙️', style: TextStyle(fontSize: 28)),
             tooltip: 'Settings',
-            onPressed: () async {
-              final saved = await showModalBottomSheet<bool>(
+            onPressed: () {
+              // Capture objects derived from context synchronously (no async/await here)
+              //final messenger = ScaffoldMessenger.of(context);
+//TO DO: CHECK HERE
+              showModalBottomSheet<bool>(
                 context: context,
                 isScrollControlled: true,
                 useSafeArea: true,
                 builder: (_) => const BottleSettingsForm(),
-              );
-
-              if (saved == true) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Paramètres biberon mis à jour')));
-                setState(() {
-                  // trigger rebuild if needed
-                });
-              }
+              ).then((saved) {
+                if (!mounted) return;
+                if (saved == true) {
+                  setState(() {
+                    // trigger rebuild if needed
+                  });
+                }
+              });
             },
           ),
         ],

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../utils/size_config.dart';
 import '../widgets/bottles_card.dart';
 import '../widgets/poop_card.dart';
-import '../widgets/vitamin_card.dart';
 import '../widgets/vitamins_card.dart';
 
 class HomePage extends StatefulWidget {

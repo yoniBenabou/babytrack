@@ -42,7 +42,7 @@ class _BottleSettingsFormState extends State<BottleSettingsForm> {
     final maxValue = int.tryParse(_maxController.text) ?? _max;
     if (minValue >= maxValue) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('La valeur minimale doit être inférieure à la maximale.'),
+        content: Text('The minimum value need to be lower than the max value.'),
       ));
       return;
     }
@@ -50,7 +50,7 @@ class _BottleSettingsFormState extends State<BottleSettingsForm> {
     await prefs.setInt('bottleMin', minValue);
     await prefs.setInt('bottleMax', maxValue);
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Paramètres enregistrés.'),
+      content: Text('Settings saved.'),
     ));
     Navigator.of(context).pop(true);
   }
@@ -71,7 +71,6 @@ class _BottleSettingsFormState extends State<BottleSettingsForm> {
       );
     }
 
-    // Pour éviter que la barre de navigation ou le clavier masque le contenu
     return SafeArea(
       child: SingleChildScrollView(
         padding: MediaQuery.of(context).viewInsets.add(const EdgeInsets.all(16.0)),
@@ -79,7 +78,7 @@ class _BottleSettingsFormState extends State<BottleSettingsForm> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 8),
-            Text('Paramètres biberon', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text('Settings', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             Form(
               key: _formKey,
@@ -91,13 +90,14 @@ class _BottleSettingsFormState extends State<BottleSettingsForm> {
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       decoration: const InputDecoration(
-                        labelText: 'Quantité minimale (ml)',
+                        labelText: 'Min value (ml)',
                         border: OutlineInputBorder(),
                       ),
                       validator: (v) {
                         final parsed = int.tryParse(v ?? '');
-                        if (parsed == null) return 'Entier requis';
-                        if (parsed <= 0) return 'Doit être > 0';
+                        if (parsed == null) return 'Number required';
+                        if (parsed <= 0) return 'Need to be > 0';
+                        if (parsed % 10 != 0) return 'Need to be a multiple of 10';
                         return null;
                       },
                     ),
@@ -109,13 +109,14 @@ class _BottleSettingsFormState extends State<BottleSettingsForm> {
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       decoration: const InputDecoration(
-                        labelText: 'Quantité maximale (ml)',
+                        labelText: 'Max value (ml)',
                         border: OutlineInputBorder(),
                       ),
                       validator: (v) {
                         final parsed = int.tryParse(v ?? '');
-                        if (parsed == null) return 'Entier requis';
-                        if (parsed <= 0) return 'Doit être > 0';
+                        if (parsed == null) return 'Number required';
+                        if (parsed <= 0) return 'Need to be > 0';
+                        if (parsed % 10 != 0) return 'Need to be a multiple of 10';
                         return null;
                       },
                     ),
@@ -129,13 +130,13 @@ class _BottleSettingsFormState extends State<BottleSettingsForm> {
                 Expanded(
                   child: TextButton(
                     onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('Annuler'),
+                    child: const Text('Cancel'),
                   ),
                 ),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _save,
-                    child: const Text('Enregistrer'),
+                    child: const Text('Save'),
                   ),
                 ),
               ],
