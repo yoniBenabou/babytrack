@@ -35,7 +35,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  String get _biberonCollection => _selectedBaby == 'bébé 1' ? 'Biberon' : 'Biberon_bebe2';
+  String get _biberonCollection => _selectedBaby != 'bébé 2' ? 'Biberon' : 'Biberon_bebe2';
   String get _vitaminCollection => _selectedBaby == 'bébé 1' ? 'Vitamin' : 'Vitamin_bebe2';
 
   @override
@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
             children: [
 
               Expanded(
-                flex: 4,
+                flex: 118,
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance.collection(_biberonCollection).snapshots(),
                   builder: (context, snapshot) {
@@ -88,7 +88,7 @@ class _HomePageState extends State<HomePage> {
               ),
               SizedBox(height: cardSpace),
               Expanded(
-                flex: 1,
+                flex: 31,
                 child: PoopCard(
                   cardFontSize: cardFontSize,
                   cardIconSize: cardIconSize,
@@ -97,7 +97,7 @@ class _HomePageState extends State<HomePage> {
               ),
               SizedBox(height: cardSpace),
               Expanded(
-                flex: 1,
+                flex: 56,
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance.collection(_vitaminCollection).snapshots(),
                   builder: (context, snapshot) {

@@ -83,7 +83,7 @@ class _MainScreenState extends State<MainScreen> {
     final double appBarIconSize = SizeConfig.icon(context, 0.09);
     final double navBarFontSize = SizeConfig.text(context, 0.055);
     final double navBarIconSize = SizeConfig.icon(context, 0.09);
-
+    final double navBarHeight = SizeConfig.vertical(context, 0.05);
     return Scaffold(
       appBar: AppBar(
         title: _loadingBabies
@@ -114,14 +114,14 @@ class _MainScreenState extends State<MainScreen> {
               ),
 
         centerTitle: true,
-       // toolbarHeight: navBarHeight,
+        toolbarHeight: navBarHeight,
         leading: Icon(
           _selectedIndex == 0 ? Icons.home : Icons.bar_chart,
           size: appBarIconSize,
         ),
         actions: [
           IconButton(
-            icon: const Text('⚙️', style: TextStyle(fontSize: 28)),
+            icon: const Text('⚙️', style: TextStyle(fontSize: 26)),
             tooltip: 'Settings',
             onPressed: () {
               // Capture objects derived from context synchronously (no async/await here)
@@ -142,9 +142,9 @@ class _MainScreenState extends State<MainScreen> {
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        selectedFontSize: navBarFontSize,
-        unselectedFontSize: navBarFontSize,
-        iconSize: navBarIconSize,
+        selectedFontSize: navBarFontSize*0.7,
+        unselectedFontSize: navBarFontSize*0.7,
+        iconSize: navBarIconSize*0.8,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
