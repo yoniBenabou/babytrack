@@ -4,11 +4,13 @@ import 'firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/welcome_page.dart';
 import 'pages/main_screen.dart';
-
+import 'package:flutter/services.dart';
 
 void main() async {
   // Ensure Flutter bindings are initialized before any async code
   WidgetsFlutterBinding.ensureInitialized();
+  // Enable immersive mode to hide system navigation and status bars
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   // Initialize Firebase with platform-specific options
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
