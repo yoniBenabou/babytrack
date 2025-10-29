@@ -70,20 +70,30 @@ class _AddVitaminFormState extends State<AddVitaminForm> {
     }
   }
 
-  String get _vitaminCollection => widget.selectedBebe == 'bébé 1' ? 'Vitamin' : 'Vitamin_bebe2';
+  // Références vers les sous-collections Iron et VitaminD
+  CollectionReference _ironRef(String bebe) => FirebaseFirestore.instance.collection('Babies').doc(bebe).collection('Iron');
+  CollectionReference _vdRef(String bebe) => FirebaseFirestore.instance.collection('Babies').doc(bebe).collection('VitaminD');
 
   void _submit() async {
+    if (widget.selectedBebe.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Aucun bébé sélectionné')));
+      return;
+    }
+
     try {
+      final atValue = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute);
       if (_ironChecked) {
-        await FirebaseFirestore.instance.collection(_vitaminCollection).add({
-          'type': 'iron',
-          'date': DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute),
+        await _ironRef(widget.selectedBebe).add({
+          'at': atValue,
+          'createdAt': Timestamp.now(),
+          'source': 'manual',
         });
       }
       if (_vdChecked) {
-        await FirebaseFirestore.instance.collection(_vitaminCollection).add({
-          'type': 'vitamin_d',
-          'date': DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute),
+        await _vdRef(widget.selectedBebe).add({
+          'at': atValue,
+          'createdAt': Timestamp.now(),
+          'source': 'manual',
         });
       }
       if (!mounted) return;

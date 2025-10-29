@@ -20,22 +20,6 @@ class _AddBottleFormState extends State<AddBottleForm> {
   int _minLimit = 10;
   int _maxLimit = 210;
 
-  String get _biberonCollection => widget.selectedBebe == 'bébé 1' ? 'Biberon' : 'Biberon_bebe2';
-
-  Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(Duration(days: 365)),
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
-
   void _onHourChanged(int newHour) {
     // Logique pour changer de jour automatiquement
     if (_selectedHour == 23 && newHour == 0) {
@@ -80,10 +64,22 @@ class _AddBottleFormState extends State<AddBottleForm> {
   }
 
   void _submit() async {
+    if (widget.selectedBebe.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Aucun bébé sélectionné')));
+      return;
+    }
+
     try {
-      await FirebaseFirestore.instance.collection(_biberonCollection).add({
+      final startedAt = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute);
+      await FirebaseFirestore.instance
+          .collection('Babies')
+          .doc(widget.selectedBebe)
+          .collection('Bottles')
+          .add({
         'quantity': _amount.toInt(),
-        'date': DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute),
+        'startedAt': startedAt,
+        'createdAt': Timestamp.now(),
+        'source': 'manual',
       });
       if (!mounted) return;
       Navigator.of(context).pop(true);
@@ -140,7 +136,19 @@ class _AddBottleFormState extends State<AddBottleForm> {
                       '${_selectedDate.year}',
                       style: TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold),
                     ),
-                    onPressed: _pickDate,
+                    onPressed: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _selectedDate,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now().add(Duration(days: 365)),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          _selectedDate = picked;
+                        });
+                      }
+                    },
                   ),
                 ],
               ),

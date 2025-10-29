@@ -113,8 +113,8 @@ class VitaminsCard extends StatelessWidget {
                   child: Row(
                     children: [
                       // petite pastille colorée (plus petite)
-                      Container(width: 6, height: 6, decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle)),
-                      SizedBox(width: 8),
+                      //Container(width: 6, height: 6, decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle)),
+                      //SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           label,
@@ -123,7 +123,7 @@ class VitaminsCard extends StatelessWidget {
                       ),
                       Text(
                         datetime,
-                        style: TextStyle(fontSize: cardFontSize * 0.75, color: Colors.grey.shade700),
+                        style: TextStyle(fontSize: cardFontSize * 0.75),
                       ),
                     ],
                   ),
@@ -183,7 +183,7 @@ class VitaminsCard extends StatelessWidget {
                           showModalBottomSheet(
                             context: context,
                             isScrollControlled: true,
-                            builder: (ctx) => EditVitaminForm(vitaminDoc: vdDoc!, selectedBebe: selectedBebe),
+                            builder: (ctx) => EditVitaminForm(vitaminDoc: vdDoc!, selectedBebe: selectedBebe, originalCollection: vdDoc.reference.parent.id),
                           );
                         } else {
                           showModalBottomSheet(
@@ -205,7 +205,7 @@ class VitaminsCard extends StatelessWidget {
                           showModalBottomSheet(
                             context: context,
                             isScrollControlled: true,
-                            builder: (ctx) => EditVitaminForm(vitaminDoc: ironDoc!, selectedBebe: selectedBebe),
+                            builder: (ctx) => EditVitaminForm(vitaminDoc: ironDoc!, selectedBebe: selectedBebe, originalCollection: ironDoc.reference.parent.id),
                           );
                         } else {
                           showModalBottomSheet(

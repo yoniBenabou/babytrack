@@ -5,7 +5,8 @@ import 'cyclic_hour_minute_picker.dart';
 class EditVitaminForm extends StatefulWidget {
   final DocumentSnapshot vitaminDoc;
   final String selectedBebe;
-  const EditVitaminForm({required this.vitaminDoc, required this.selectedBebe, super.key});
+  final String? originalCollection; // 'VitaminD' or 'Iron'
+  const EditVitaminForm({required this.vitaminDoc, required this.selectedBebe, this.originalCollection, super.key});
 
   @override
   State<EditVitaminForm> createState() => _EditVitaminFormState();
@@ -20,12 +21,32 @@ class _EditVitaminFormState extends State<EditVitaminForm> {
   @override
   void initState() {
     super.initState();
-    final date = (widget.vitaminDoc['date'] as Timestamp).toDate();
-    _selectedDate = DateTime(date.year, date.month, date.day);
-    _selectedHour = date.hour;
-    _selectedMinute = date.minute;
-    // Récupère le type existant, sinon 'iron' par défaut
-    _selectedType = (widget.vitaminDoc.data() as Map<String, dynamic>?)?['type'] as String? ?? 'iron';
+    // Lire le champ 'at' (Timestamp ou DateTime)
+    final dataMap = widget.vitaminDoc.data() as Map<String, dynamic>?;
+    final rawAt = dataMap != null ? dataMap['at'] : null;
+    DateTime atDate;
+    if (rawAt is Timestamp) {
+      atDate = rawAt.toDate();
+    } else if (rawAt is DateTime) {
+      atDate = rawAt;
+    } else {
+      atDate = DateTime.now();
+    }
+    _selectedDate = DateTime(atDate.year, atDate.month, atDate.day);
+    _selectedHour = atDate.hour;
+    _selectedMinute = atDate.minute;
+
+    // Déduire la collection d'origine : priorité à originalCollection s'il est fourni,
+    // sinon utiliser le parent de la référence du document.
+    final String originCollection = widget.originalCollection ?? widget.vitaminDoc.reference.parent.id;
+    if (originCollection.toLowerCase().contains('vitamind')) {
+      _selectedType = 'vitamin_d';
+    } else if (originCollection.toLowerCase().contains('iron')) {
+      _selectedType = 'iron';
+    } else {
+      // fallback : utiliser le champ 'type' s'il existe, sinon 'vitamin_d'
+      _selectedType = dataMap != null && dataMap['type'] != null ? dataMap['type'] as String : 'vitamin_d';
+    }
   }
 
   Future<void> _pickDate() async {
@@ -60,14 +81,26 @@ class _EditVitaminFormState extends State<EditVitaminForm> {
     }
   }
 
-  String get _vitaminCollection => widget.selectedBebe == 'bébé 1' ? 'Vitamin' : 'Vitamin_bebe2';
+  // Retourne la référence vers la collection adéquate selon le type et le bébé
+  CollectionReference _collectionRefForType(String type) {
+    if (type == 'vitamin_d') {
+      return FirebaseFirestore.instance.collection('Babies').doc(widget.selectedBebe).collection('VitaminD');
+    }
+    return FirebaseFirestore.instance.collection('Babies').doc(widget.selectedBebe).collection('Iron');
+  }
 
   void _submit() async {
     try {
-      await FirebaseFirestore.instance.collection(_vitaminCollection).doc(widget.vitaminDoc.id).update({
+      final atValue = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute);
+      final sourceValue = (widget.vitaminDoc.data() as Map<String, dynamic>?)?['source'] ?? 'manual';
+
+      // Mise à jour simple du document via sa référence (on ne change pas de collection ici)
+      await widget.vitaminDoc.reference.update({
+        'at': atValue,
+        'source': sourceValue,
         'type': _selectedType,
-        'date': DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute),
       });
+
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (e) {
@@ -111,21 +144,15 @@ class _EditVitaminFormState extends State<EditVitaminForm> {
               ),
               SizedBox(height: 8),
 
-              // Sélection du type
+              // Type (lecture seule : déterminé par la collection d'origine)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('Type : ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(width: 8),
-                  DropdownButton<String>(
-                    value: _selectedType,
-                    items: const [
-                      DropdownMenuItem(value: 'iron', child: Text('Fer')),
-                      DropdownMenuItem(value: 'vitamin_d', child: Text('Vitamine D')),
-                    ],
-                    onChanged: (v) {
-                      if (v != null) setState(() => _selectedType = v);
-                    },
+                  Text(
+                    _selectedType == 'vitamin_d' ? 'Vitamine D' : 'Fer',
+                    style: TextStyle(fontSize: 18, color: Colors.green, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -166,7 +193,8 @@ class _EditVitaminFormState extends State<EditVitaminForm> {
                 label: Text('Supprimer', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 onPressed: () async {
                   try {
-                    await FirebaseFirestore.instance.collection(_vitaminCollection).doc(widget.vitaminDoc.id).delete();
+                    // Supprimer le document via sa référence (sécurisé quel que soit la collection)
+                    await widget.vitaminDoc.reference.delete();
                     if (!mounted) return;
                     Navigator.of(context).pop(true);
                   } catch (e) {

@@ -21,11 +21,13 @@ class _EditPoopFormState extends State<EditPoopForm> {
   @override
   void initState() {
     super.initState();
-    final date = (widget.poopDoc['date'] as Timestamp).toDate();
-    _selectedDate = DateTime(date.year, date.month, date.day);
-    _selectedHour = date.hour;
-    _selectedMinute = date.minute;
-    _notes = widget.poopDoc['notes'] as String?;
+    // Lire le timestamp 'at' (peut être Timestamp ou DateTime)
+    final rawAt = widget.poopDoc.get('at');
+    final atDate = rawAt is Timestamp ? rawAt.toDate() : (rawAt as DateTime);
+    _selectedDate = DateTime(atDate.year, atDate.month, atDate.day);
+    _selectedHour = atDate.hour;
+    _selectedMinute = atDate.minute;
+    _notes = widget.poopDoc.get('notes') as String?;
     _notesController = TextEditingController(text: _notes ?? '');
   }
 
@@ -61,13 +63,23 @@ class _EditPoopFormState extends State<EditPoopForm> {
     }
   }
 
-  String get _poopCollection => widget.selectedBebe == 'bébé 1' ? 'Poop' : 'Poop_bebe2';
+  // Retourne la référence vers la sous-collection Poops du bébé sélectionné
+  CollectionReference get _poopCollectionRef => FirebaseFirestore.instance
+      .collection('Babies')
+      .doc(widget.selectedBebe)
+      .collection('Poops');
 
   void _submit() async {
     try {
-      await FirebaseFirestore.instance.collection(_poopCollection).doc(widget.poopDoc.id).update({
-        'date': DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute),
+      final atValue = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute);
+      // Prendre la valeur source existante si présente, sinon 'manual'
+      final existing = widget.poopDoc.data() as Map<String, dynamic>?;
+      final sourceValue = existing != null && existing['source'] != null ? existing['source'] as String : 'manual';
+
+      await _poopCollectionRef.doc(widget.poopDoc.id).update({
+        'at': atValue,
         'notes': _notesController.text,
+        'source': sourceValue,
       });
       if (!mounted) return;
       Navigator.of(context).pop(true);
@@ -161,7 +173,7 @@ class _EditPoopFormState extends State<EditPoopForm> {
                 label: Text('Supprimer', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 onPressed: () async {
                   try {
-                    await FirebaseFirestore.instance.collection(_poopCollection).doc(widget.poopDoc.id).delete();
+                    await _poopCollectionRef.doc(widget.poopDoc.id).delete();
                     if (!mounted) return;
                     Navigator.of(context).pop(true);
                   } catch (e) {

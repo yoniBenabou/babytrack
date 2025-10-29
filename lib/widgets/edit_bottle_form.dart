@@ -35,6 +35,33 @@ class _EditBottleFormState extends State<EditBottleForm> {
     _selectedHour = widget.initialHour;
     _selectedMinute = widget.initialMinute;
     _selectedDate = DateTime.now(); // Par défaut aujourd'hui
+    // Tenter de récupérer la date exacte du document pour préremplir la date si possible
+    _loadInitialDate();
+  }
+
+  Future<void> _loadInitialDate() async {
+    try {
+      final doc = await _bottlesRef.doc(widget.bottleId).get();
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>?;
+        if (data != null) {
+          final raw = data['startedAt'] ?? data['date'] ?? data['at'];
+          if (raw != null) {
+            DateTime dt;
+            if (raw is Timestamp) dt = raw.toDate();
+            else if (raw is DateTime) dt = raw;
+            else dt = DateTime.now();
+            setState(() {
+              _selectedDate = DateTime(dt.year, dt.month, dt.day);
+              _selectedHour = dt.hour;
+              _selectedMinute = dt.minute;
+            });
+          }
+        }
+      }
+    } catch (_) {
+      // ignore errors and keep defaults
+    }
   }
 
   Future<void> _pickDate() async {
@@ -72,14 +99,15 @@ class _EditBottleFormState extends State<EditBottleForm> {
     }
   }
 
-  String get _biberonCollection => widget.selectedBebe == 'bébé 1' ? 'Biberon' : 'Biberon_bebe2';
+  // Référence vers la sous-collection Bottles du bébé
+  CollectionReference get _bottlesRef => FirebaseFirestore.instance.collection('Babies').doc(widget.selectedBebe).collection('Bottles');
 
   void _submit() async {
-    // Mise à jour dans la base de données avec gestion d'erreur
     try {
-      await FirebaseFirestore.instance.collection(_biberonCollection).doc(widget.bottleId).update({
+      final startedAt = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute);
+      await _bottlesRef.doc(widget.bottleId).update({
         'quantity': _amount.toInt(),
-        'date': DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute),
+        'startedAt': startedAt,
       });
       if (!mounted) return;
       Navigator.of(context).pop(true);
@@ -106,20 +134,7 @@ class _EditBottleFormState extends State<EditBottleForm> {
               SizedBox(height: 16),
               Text('Modifier la quantité bue', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               SizedBox(height: 16),
-              Text('${_amount.toInt()} ml', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blue)),
-              Slider(
-                value: _amount,
-                min: 10,
-                max: 300,
-                divisions: 29,
-                label: '${_amount.toInt()} ml',
-                onChanged: (value) {
-                  setState(() {
-                    _amount = (value/10).round()*10;
-                  });
-                },
-              ),
-              SizedBox(height: 24),
+              // Afficher la date en premier
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -137,6 +152,7 @@ class _EditBottleFormState extends State<EditBottleForm> {
                 ],
               ),
               SizedBox(height: 8),
+              // Puis l'heure
               Text('Modifier l\'heure', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
               CyclicHourMinutePicker(
@@ -146,6 +162,21 @@ class _EditBottleFormState extends State<EditBottleForm> {
                 onMinuteChanged: (minute) {
                   setState(() {
                     _selectedMinute = minute;
+                  });
+                },
+              ),
+              SizedBox(height: 16),
+              // Puis la quantité
+              Text('${_amount.toInt()} ml', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blue)),
+              Slider(
+                value: _amount,
+                min: 10,
+                max: 300,
+                divisions: 29,
+                label: '${_amount.toInt()} ml',
+                onChanged: (value) {
+                  setState(() {
+                    _amount = (value / 10).round() * 10;
                   });
                 },
               ),
@@ -170,7 +201,7 @@ class _EditBottleFormState extends State<EditBottleForm> {
                 label: Text('Supprimer', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 onPressed: () async {
                   try {
-                    await FirebaseFirestore.instance.collection(_biberonCollection).doc(widget.bottleId).delete();
+                    await _bottlesRef.doc(widget.bottleId).delete();
                     if (!mounted) return;
                     Navigator.of(context).pop(true);
                   } catch (e) {

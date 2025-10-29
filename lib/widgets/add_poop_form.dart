@@ -17,7 +17,11 @@ class _AddPoopFormState extends State<AddPoopForm> {
   DateTime _selectedDate = DateTime.now();
   String? _notes;
 
-  String get _poopCollection => widget.selectedBebe == 'bébé 1' ? 'Poop' : 'Poop_bebe2';
+  // Référence vers la sous-collection Poops du bébé sélectionné
+  CollectionReference get _poopCollectionRef => FirebaseFirestore.instance
+      .collection('Babies')
+      .doc(widget.selectedBebe)
+      .collection('Poops');
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -55,10 +59,18 @@ class _AddPoopFormState extends State<AddPoopForm> {
   }
 
   void _submit() async {
+    if (widget.selectedBebe.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Aucun bébé sélectionné')));
+      return;
+    }
+
     try {
-      await FirebaseFirestore.instance.collection(_poopCollection).add({
-        'date': DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute),
+      final atValue = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute);
+      await _poopCollectionRef.add({
+        'at': atValue,
+        'createdAt': Timestamp.now(),
         'notes': _notes,
+        'source': 'manual',
       });
       if (!mounted) return;
       Navigator.of(context).pop(true);
