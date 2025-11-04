@@ -72,6 +72,16 @@ class _EditPoopFormState extends State<EditPoopForm> {
   void _submit() async {
     try {
       final atValue = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute);
+      // Prendre la valeur précédente pour ajuster l'historique
+      final prevDoc = await _poopCollectionRef.doc(widget.poopDoc.id).get();
+      DateTime? oldAt;
+      if (prevDoc.exists) {
+        final pdata = prevDoc.data() as Map<String, dynamic>?;
+        final raw = pdata != null ? pdata['at'] ?? pdata['date'] : null;
+        if (raw is Timestamp) oldAt = raw.toDate();
+        else if (raw is DateTime) oldAt = raw;
+      }
+
       // Prendre la valeur source existante si présente, sinon 'manual'
       final existing = widget.poopDoc.data() as Map<String, dynamic>?;
       final sourceValue = existing != null && existing['source'] != null ? existing['source'] as String : 'manual';
@@ -81,13 +91,32 @@ class _EditPoopFormState extends State<EditPoopForm> {
         'notes': _notesController.text,
         'source': sourceValue,
       });
-      if (!mounted) return;
-      Navigator.of(context).pop(true);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de l\'enregistrement : $e')));
-    }
-  }
+
+      final historyColl = FirebaseFirestore.instance.collection('Babies').doc(widget.selectedBebe).collection('HistoryLogs');
+      final newKey = '${atValue.year.toString().padLeft(4, '0')}-'
+          '${atValue.month.toString().padLeft(2, '0')}-'
+          '${atValue.day.toString().padLeft(2, '0')}';
+      if (oldAt != null) {
+        final oldKey = '${oldAt.year.toString().padLeft(4, '0')}-'
+            '${oldAt.month.toString().padLeft(2, '0')}-'
+            '${oldAt.day.toString().padLeft(2, '0')}';
+        if (oldKey == newKey) {
+          // même jour => rien à faire
+        } else {
+          await historyColl.doc(oldKey).set({'poopsCount': FieldValue.increment(-1)}, SetOptions(merge: true));
+          await historyColl.doc(newKey).set({'poopsCount': FieldValue.increment(1)}, SetOptions(merge: true));
+        }
+      } else {
+        // pas d'ancienne date, incrémenter
+        await historyColl.doc(newKey).set({'poopsCount': FieldValue.increment(1)}, SetOptions(merge: true));
+      }
+       if (!mounted) return;
+       Navigator.of(context).pop(true);
+     } catch (e) {
+       if (!mounted) return;
+       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de l\'enregistrement : $e')));
+     }
+   }
 
   @override
   Widget build(BuildContext context) {
@@ -173,14 +202,31 @@ class _EditPoopFormState extends State<EditPoopForm> {
                 label: Text('Supprimer', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 onPressed: () async {
                   try {
+                    // Avant suppression, ajuster l'historique
+                    final prev = await _poopCollectionRef.doc(widget.poopDoc.id).get();
+                    if (prev.exists) {
+                      final pdata = prev.data() as Map<String, dynamic>?;
+                      DateTime? at;
+                      if (pdata != null) {
+                        final raw = pdata['at'] ?? pdata['date'];
+                        if (raw is Timestamp) at = raw.toDate();
+                        else if (raw is DateTime) at = raw;
+                      }
+                      if (at != null) {
+                        final key = '${at.year.toString().padLeft(4, '0')}-'
+                            '${at.month.toString().padLeft(2, '0')}-'
+                            '${at.day.toString().padLeft(2, '0')}';
+                        await FirebaseFirestore.instance.collection('Babies').doc(widget.selectedBebe).collection('HistoryLogs').doc(key).set({'poopsCount': FieldValue.increment(-1)}, SetOptions(merge: true));
+                      }
+                    }
                     await _poopCollectionRef.doc(widget.poopDoc.id).delete();
-                    if (!mounted) return;
-                    Navigator.of(context).pop(true);
-                  } catch (e) {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de la suppression : $e')));
-                  }
-                },
+                     if (!mounted) return;
+                     Navigator.of(context).pop(true);
+                   } catch (e) {
+                     if (!mounted) return;
+                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de la suppression : $e')));
+                   }
+                 },
                 style: TextButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                   backgroundColor: Colors.red,

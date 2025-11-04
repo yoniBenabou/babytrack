@@ -72,6 +72,21 @@ class _AddPoopFormState extends State<AddPoopForm> {
         'notes': _notes,
         'source': 'manual',
       });
+
+      // Mise à jour du résumé quotidien dans HistoryLogs/{YYYY-MM-DD}
+      final dateKey = '${atValue.year.toString().padLeft(4, '0')}-'
+          '${atValue.month.toString().padLeft(2, '0')}-'
+          '${atValue.day.toString().padLeft(2, '0')}';
+      final historyRef = FirebaseFirestore.instance
+          .collection('Babies')
+          .doc(widget.selectedBebe)
+          .collection('HistoryLogs')
+          .doc(dateKey);
+
+      await historyRef.set({
+        'poopsCount': FieldValue.increment(1),
+      }, SetOptions(merge: true));
+
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (e) {

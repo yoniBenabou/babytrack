@@ -96,6 +96,24 @@ class _AddVitaminFormState extends State<AddVitaminForm> {
           'source': 'manual',
         });
       }
+
+      // Mise à jour du résumé quotidien dans HistoryLogs/{YYYY-MM-DD}
+      final dateKey = '${atValue.year.toString().padLeft(4, '0')}-'
+          '${atValue.month.toString().padLeft(2, '0')}-'
+          '${atValue.day.toString().padLeft(2, '0')}';
+      final historyRef = FirebaseFirestore.instance
+          .collection('Babies')
+          .doc(widget.selectedBebe)
+          .collection('HistoryLogs')
+          .doc(dateKey);
+
+      final Map<String, dynamic> updates = {};
+      if (_ironChecked) updates['ironCount'] = FieldValue.increment(1);
+      if (_vdChecked) updates['vitaminDCount'] = FieldValue.increment(1);
+      if (updates.isNotEmpty) {
+        await historyRef.set(updates, SetOptions(merge: true));
+      }
+
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (e) {

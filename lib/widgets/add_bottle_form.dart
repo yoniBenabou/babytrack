@@ -71,6 +71,7 @@ class _AddBottleFormState extends State<AddBottleForm> {
 
     try {
       final startedAt = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute);
+      // Ajout du biberon
       await FirebaseFirestore.instance
           .collection('Babies')
           .doc(widget.selectedBebe)
@@ -81,6 +82,22 @@ class _AddBottleFormState extends State<AddBottleForm> {
         'createdAt': Timestamp.now(),
         'source': 'manual',
       });
+
+      // Mise à jour du résumé quotidien dans HistoryLogs/{YYYY-MM-DD}
+      final dateKey = '${startedAt.year.toString().padLeft(4, '0')}-'
+          '${startedAt.month.toString().padLeft(2, '0')}-'
+          '${startedAt.day.toString().padLeft(2, '0')}';
+      final historyRef = FirebaseFirestore.instance
+          .collection('Babies')
+          .doc(widget.selectedBebe)
+          .collection('HistoryLogs')
+          .doc(dateKey);
+
+      await historyRef.set({
+        'bottlesCount': FieldValue.increment(1),
+        'bottlesTotalQuantity': FieldValue.increment(_amount.toInt()),
+      }, SetOptions(merge: true));
+
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (e) {
@@ -106,7 +123,10 @@ class _AddBottleFormState extends State<AddBottleForm> {
               SizedBox(height: 16),
               Text('Choisis la quantité bue', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               SizedBox(height: 16),
-              Text('${_amount.toInt()} ml', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blue)),
+              Text(
+                '${_amount.toInt()} ml',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blue),
+              ),
               Slider(
                 value: _amount,
                 min: _minLimit.toDouble(),

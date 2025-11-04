@@ -104,11 +104,58 @@ class _EditBottleFormState extends State<EditBottleForm> {
 
   void _submit() async {
     try {
+      // Récupérer l'état précédent du document pour ajuster l'historique
+      final prevDoc = await _bottlesRef.doc(widget.bottleId).get();
+      Map<String, dynamic>? prevData = prevDoc.exists ? (prevDoc.data() as Map<String, dynamic>?) : null;
+      DateTime? oldStartedAt;
+      int oldQuantity = 0;
+      if (prevData != null) {
+        final raw = prevData['startedAt'] ?? prevData['date'] ?? prevData['at'];
+        if (raw is Timestamp) oldStartedAt = raw.toDate();
+        else if (raw is DateTime) oldStartedAt = raw;
+        if (prevData['quantity'] is int) oldQuantity = prevData['quantity'] as int;
+      }
       final startedAt = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute);
       await _bottlesRef.doc(widget.bottleId).update({
         'quantity': _amount.toInt(),
         'startedAt': startedAt,
       });
+
+      // Mettre à jour HistoryLogs : calculer les clés de date (YYYY-MM-DD)
+      final newDateKey = '${startedAt.year.toString().padLeft(4, '0')}-'
+          '${startedAt.month.toString().padLeft(2, '0')}-'
+          '${startedAt.day.toString().padLeft(2, '0')}';
+      final historyCollection = FirebaseFirestore.instance.collection('Babies').doc(widget.selectedBebe).collection('HistoryLogs');
+
+      if (oldStartedAt != null) {
+        final oldDateKey = '${oldStartedAt.year.toString().padLeft(4, '0')}-'
+            '${oldStartedAt.month.toString().padLeft(2, '0')}-'
+            '${oldStartedAt.day.toString().padLeft(2, '0')}';
+
+        if (oldDateKey == newDateKey) {
+          // même jour : ajuster uniquement la quantité totale
+          final delta = _amount.toInt() - oldQuantity;
+          if (delta != 0) {
+            await historyCollection.doc(newDateKey).set({'bottlesTotalQuantity': FieldValue.increment(delta)}, SetOptions(merge: true));
+          }
+        } else {
+          // jour changé : décrémenter l'ancien jour, incrémenter le nouveau
+          await historyCollection.doc(oldDateKey).set({
+            'bottlesCount': FieldValue.increment(-1),
+            'bottlesTotalQuantity': FieldValue.increment(-oldQuantity),
+          }, SetOptions(merge: true));
+          await historyCollection.doc(newDateKey).set({
+            'bottlesCount': FieldValue.increment(1),
+            'bottlesTotalQuantity': FieldValue.increment(_amount.toInt()),
+          }, SetOptions(merge: true));
+        }
+      } else {
+        // pas d'ancienne date : incrémenter le nouveau jour
+        await historyCollection.doc(newDateKey).set({
+          'bottlesCount': FieldValue.increment(1),
+          'bottlesTotalQuantity': FieldValue.increment(_amount.toInt()),
+        }, SetOptions(merge: true));
+      }
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (e) {
@@ -201,6 +248,29 @@ class _EditBottleFormState extends State<EditBottleForm> {
                 label: Text('Supprimer', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 onPressed: () async {
                   try {
+                    // Avant suppression, récupérer le document pour ajuster l'historique
+                    final prev = await _bottlesRef.doc(widget.bottleId).get();
+                    if (prev.exists) {
+                      final pdata = prev.data() as Map<String, dynamic>?;
+                      DateTime? at;
+                      int qty = 0;
+                      if (pdata != null) {
+                        final raw = pdata['startedAt'] ?? pdata['date'] ?? pdata['at'];
+                        if (raw is Timestamp) at = raw.toDate();
+                        else if (raw is DateTime) at = raw;
+                        if (pdata['quantity'] is int) qty = pdata['quantity'] as int;
+                      }
+                      if (at != null) {
+                        final dateKey = '${at.year.toString().padLeft(4, '0')}-'
+                            '${at.month.toString().padLeft(2, '0')}-'
+                            '${at.day.toString().padLeft(2, '0')}';
+                        final historyRef = FirebaseFirestore.instance.collection('Babies').doc(widget.selectedBebe).collection('HistoryLogs').doc(dateKey);
+                        await historyRef.set({
+                          'bottlesCount': FieldValue.increment(-1),
+                          'bottlesTotalQuantity': FieldValue.increment(-qty),
+                        }, SetOptions(merge: true));
+                      }
+                    }
                     await _bottlesRef.doc(widget.bottleId).delete();
                     if (!mounted) return;
                     Navigator.of(context).pop(true);

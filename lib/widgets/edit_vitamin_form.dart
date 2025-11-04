@@ -81,33 +81,63 @@ class _EditVitaminFormState extends State<EditVitaminForm> {
     }
   }
 
-  // Retourne la référence vers la collection adéquate selon le type et le bébé
-  CollectionReference _collectionRefForType(String type) {
-    if (type == 'vitamin_d') {
-      return FirebaseFirestore.instance.collection('Babies').doc(widget.selectedBebe).collection('VitaminD');
-    }
-    return FirebaseFirestore.instance.collection('Babies').doc(widget.selectedBebe).collection('Iron');
-  }
-
   void _submit() async {
     try {
       final atValue = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedHour, _selectedMinute);
       final sourceValue = (widget.vitaminDoc.data() as Map<String, dynamic>?)?['source'] ?? 'manual';
 
-      // Mise à jour simple du document via sa référence (on ne change pas de collection ici)
+      // Récupérer ancien état pour ajuster l'historique
+      final prev = await widget.vitaminDoc.reference.get();
+      DateTime? oldAt;
+      String oldType = _selectedType;
+      if (prev.exists) {
+        final pdata = prev.data() as Map<String, dynamic>?;
+        final raw = pdata != null ? pdata['at'] ?? pdata['date'] : null;
+        if (raw is Timestamp) oldAt = raw.toDate();
+        else if (raw is DateTime) oldAt = raw;
+        if (pdata != null && pdata['type'] is String) oldType = pdata['type'] as String;
+      }
+
+      // Mise à jour du document
       await widget.vitaminDoc.reference.update({
         'at': atValue,
         'source': sourceValue,
         'type': _selectedType,
       });
 
-      if (!mounted) return;
-      Navigator.of(context).pop(true);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de l\'enregistrement : $e')));
-    }
-  }
+      // Ajuster HistoryLogs
+      final historyColl = FirebaseFirestore.instance.collection('Babies').doc(widget.selectedBebe).collection('HistoryLogs');
+      final newKey = '${atValue.year.toString().padLeft(4, '0')}-'
+          '${atValue.month.toString().padLeft(2, '0')}-'
+          '${atValue.day.toString().padLeft(2, '0')}';
+
+      // Helper pour choisir le champ selon le type
+      String fieldForType(String t) => t == 'iron' ? 'ironCount' : 'vitaminDCount';
+
+      if (oldAt != null) {
+        final oldKey = '${oldAt.year.toString().padLeft(4, '0')}-'
+            '${oldAt.month.toString().padLeft(2, '0')}-'
+            '${oldAt.day.toString().padLeft(2, '0')}';
+        if (oldKey == newKey && oldType == _selectedType) {
+          // même jour et même type => rien à faire
+        } else {
+          // décrémenter ancien
+          await historyColl.doc(oldKey).set({fieldForType(oldType): FieldValue.increment(-1)}, SetOptions(merge: true));
+          // incrémenter nouveau
+          await historyColl.doc(newKey).set({fieldForType(_selectedType): FieldValue.increment(1)}, SetOptions(merge: true));
+        }
+      } else {
+        // pas d'ancienne date
+        await historyColl.doc(newKey).set({fieldForType(_selectedType): FieldValue.increment(1)}, SetOptions(merge: true));
+      }
+
+       if (!mounted) return;
+       Navigator.of(context).pop(true);
+     } catch (e) {
+       if (!mounted) return;
+       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de l\'enregistrement : $e')));
+     }
+   }
 
   @override
   Widget build(BuildContext context) {
@@ -193,15 +223,35 @@ class _EditVitaminFormState extends State<EditVitaminForm> {
                 label: Text('Supprimer', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 onPressed: () async {
                   try {
+                    // Avant suppression, ajuster l'historique
+                    final prev = await widget.vitaminDoc.reference.get();
+                    if (prev.exists) {
+                      final pdata = prev.data() as Map<String, dynamic>?;
+                      DateTime? at;
+                      String type = _selectedType;
+                      if (pdata != null) {
+                        final raw = pdata['at'] ?? pdata['date'];
+                        if (raw is Timestamp) at = raw.toDate();
+                        else if (raw is DateTime) at = raw;
+                        if (pdata['type'] is String) type = pdata['type'] as String;
+                      }
+                      if (at != null) {
+                        final key = '${at.year.toString().padLeft(4, '0')}-'
+                            '${at.month.toString().padLeft(2, '0')}-'
+                            '${at.day.toString().padLeft(2, '0')}';
+                        final field = type == 'iron' ? 'ironCount' : 'vitaminDCount';
+                        await FirebaseFirestore.instance.collection('Babies').doc(widget.selectedBebe).collection('HistoryLogs').doc(key).set({field: FieldValue.increment(-1)}, SetOptions(merge: true));
+                      }
+                    }
                     // Supprimer le document via sa référence (sécurisé quel que soit la collection)
                     await widget.vitaminDoc.reference.delete();
-                    if (!mounted) return;
-                    Navigator.of(context).pop(true);
-                  } catch (e) {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de la suppression : $e')));
-                  }
-                },
+                     if (!mounted) return;
+                     Navigator.of(context).pop(true);
+                   } catch (e) {
+                     if (!mounted) return;
+                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de la suppression : $e')));
+                   }
+                 },
                 style: TextButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                   backgroundColor: Colors.red,
