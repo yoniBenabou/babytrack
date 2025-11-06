@@ -64,6 +64,10 @@ class _MainScreenState extends State<MainScreen> {
           }
         }
       }
+      else {
+        /// to do handle no user doc case
+        debugPrint('User doc does not exist');
+      }
     } catch (e) {
       debugPrint('Error loading babyIds: $e');
     }
