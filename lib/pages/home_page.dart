@@ -3,11 +3,13 @@ import '../utils/size_config.dart';
 import '../widgets/bottles_card.dart';
 import '../widgets/poop_card.dart';
 import '../widgets/vitamins_card.dart';
+import 'add_baby_page.dart';
 
 class HomePage extends StatefulWidget {
   final String selectedBaby;
+  final ValueChanged<String>? onBabyAdded; // optional callback to notify parent
 
-  const HomePage({super.key, this.selectedBaby = ''});
+  const HomePage({super.key, this.selectedBaby = '', this.onBabyAdded});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -20,7 +22,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _selectedBaby = widget.selectedBaby.isNotEmpty ? widget.selectedBaby : 'bébé 1';
+    _selectedBaby = widget.selectedBaby.isNotEmpty ? widget.selectedBaby : '';
   }
 
   @override
@@ -34,11 +36,40 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _openAddBaby() async {
+    final newId = await Navigator.of(context).push<String>(MaterialPageRoute(builder: (_) => const AddBabyPage()));
+    if (newId != null && newId.isNotEmpty) {
+      // notify parent if provided
+      widget.onBabyAdded?.call(newId);
+      setState(() {
+        _selectedBaby = newId;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final double cardFontSize = SizeConfig.text(context, 0.055);
     final double cardIconSize = SizeConfig.icon(context, 0.07);
     final double cardSpace = SizeConfig.vertical(context, 0.01);
+
+    if (_selectedBaby.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Aucun bébé sélectionné', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              const Text('Ajoutez un bébé pour commencer à suivre les biberons et soins.'),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(onPressed: _openAddBaby, icon: const Icon(Icons.add), label: const Text('Ajouter un bébé'))
+            ],
+          ),
+        ),
+      );
+    }
 
     return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),

@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'add_baby_page.dart';
 
 class StatisticsPage extends StatelessWidget {
   final String selectedBaby;
+  final ValueChanged<String>? onBabyAdded;
 
-  const StatisticsPage({super.key, this.selectedBaby = ''});
+  const StatisticsPage({super.key, this.selectedBaby = '', this.onBabyAdded});
 
   // Récupère les stats HistoryLogs pour les 7 derniers jours pour le bébé sélectionné
   Future<Map<String, dynamic>> _getHistoryLast7Days() async {
@@ -78,6 +80,27 @@ class StatisticsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double cardFontSize = 18;
+    if (selectedBaby.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Aucun bébé sélectionné', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              const Text('Sélectionnez ou créez un bébé pour voir les statistiques.'),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(onPressed: () async {
+                final newId = await Navigator.of(context).push<String>(MaterialPageRoute(builder: (_) => const AddBabyPage()));
+                if (newId != null && newId.isNotEmpty) onBabyAdded?.call(newId);
+              }, icon: const Icon(Icons.add), label: const Text('Ajouter un bébé'))
+            ],
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(

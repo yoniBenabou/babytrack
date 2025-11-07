@@ -4,6 +4,7 @@ import '../utils/size_config.dart';
 import 'home_page.dart';
 import 'statistics_page.dart';
 import '../widgets/bottle_settings_form.dart';
+import 'add_baby_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -29,8 +30,12 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _loadBabyIds() async {
+    setState(() {
+      _loadingBabies = true;
+    });
+
     try {
-      final doc = await FirebaseFirestore.instance.collection('Users').doc('329573562').get();
+      final doc = await FirebaseFirestore.instance.collection('Users').doc('329573563').get();
       if (doc.exists) {
         final data = doc.data();
         if (data != null && data['babyIds'] is List) {
@@ -72,7 +77,26 @@ class _MainScreenState extends State<MainScreen> {
       debugPrint('Error loading babyIds: $e');
     }
 
-    // TO DO: handle no babies case
+    // No babies found - ensure loading flag cleared
+    setState(() {
+      _babyList = [];
+      _babyNames = {};
+      _selectedBaby = '';
+      _loadingBabies = false;
+    });
+  }
+
+  // Called when Add Baby is requested - open AddBabyPage and reload if new id returned
+  Future<void> _onAddBabyPressed() async {
+    final newId = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const AddBabyPage()),
+    );
+    if (newId != null && newId.isNotEmpty) {
+      await _loadBabyIds();
+      setState(() {
+        _selectedBaby = newId;
+      });
+    }
   }
 
   // Build pages dynamically so we can pass the currently selected baby id/name
@@ -92,31 +116,32 @@ class _MainScreenState extends State<MainScreen> {
       appBar: AppBar(
         title: _loadingBabies
             ? const SizedBox(width: 120, height: 24, child: Center(child: CircularProgressIndicator(strokeWidth: 2)))
-            : DropdownButton<String>(
-                value: _selectedBaby.isNotEmpty ? _selectedBaby : null,
-                isExpanded: true,
-                // Use selectedItemBuilder to customize how the selected value is displayed
-                selectedItemBuilder: (BuildContext context) => _babyList
-                    .map((id) => Align(
-                          alignment: Alignment.center,
-                          child: Text(_babyNames[id] ?? id, style: TextStyle(fontSize: appBarFontSize)),
-                        ))
-                    .toList(),
-                items: _babyList
-                    .map((id) => DropdownMenuItem<String>(
-                          value: id,
-                          child: Text(_babyNames[id] ?? id, style: TextStyle(fontSize: appBarFontSize)),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedBaby = value;
-                    });
-                  }
-                },
-              ),
-
+            : (_babyList.isNotEmpty
+                ? DropdownButton<String>(
+                    value: _selectedBaby.isNotEmpty ? _selectedBaby : null,
+                    isExpanded: true,
+                    // Use selectedItemBuilder to customize how the selected value is displayed
+                    selectedItemBuilder: (BuildContext context) => _babyList
+                        .map((id) => Align(
+                              alignment: Alignment.center,
+                              child: Text(_babyNames[id] ?? id, style: TextStyle(fontSize: appBarFontSize)),
+                            ))
+                        .toList(),
+                    items: _babyList
+                        .map((id) => DropdownMenuItem<String>(
+                              value: id,
+                              child: Text(_babyNames[id] ?? id, style: TextStyle(fontSize: appBarFontSize)),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedBaby = value;
+                        });
+                      }
+                    },
+                  )
+                : Text('Aucun bébé', style: TextStyle(fontSize: appBarFontSize))),
         centerTitle: true,
         toolbarHeight: navBarHeight,
         leading: Icon(
@@ -125,12 +150,14 @@ class _MainScreenState extends State<MainScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'Ajouter un bébé',
+            onPressed: _onAddBabyPressed,
+          ),
+          IconButton(
             icon: const Text('⚙️', style: TextStyle(fontSize: 26)),
             tooltip: 'Settings',
             onPressed: () {
-              // Capture objects derived from context synchronously (no async/await here)
-              //final messenger = ScaffoldMessenger.of(context);
-//TO DO: CHECK HERE
               showModalBottomSheet<bool>(
                 context: context,
                 isScrollControlled: true,
