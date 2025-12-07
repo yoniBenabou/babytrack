@@ -39,7 +39,7 @@ class _PoopCardState extends State<PoopCard> {
               SizedBox(width: SizeConfig.text(context, 0.03)),
               Expanded(
                 child: Text(
-                  'Aucun bébé sélectionné',
+                  'No baby selected',
                   style: TextStyle(fontSize: widget.cardFontSize),
                 ),
               ),
@@ -66,7 +66,7 @@ class _PoopCardState extends State<PoopCard> {
     return StreamBuilder<QuerySnapshot>(
       stream: stream,
       builder: (context, snapshot) {
-        String poopDate = 'Aucun';
+        String poopDate = 'None';
         String poopTime = '';
         DocumentSnapshot? poopDoc;
 
@@ -106,7 +106,7 @@ class _PoopCardState extends State<PoopCard> {
                           }
                         : null,
                     child: Text(
-                      'Dernier caca le $poopDate à $poopTime',
+                      'Last poop on $poopDate at $poopTime',
                       style: TextStyle(fontSize: widget.cardFontSize),
                     ),
                   ),
@@ -115,7 +115,7 @@ class _PoopCardState extends State<PoopCard> {
                   backgroundColor: Colors.brown,
                   child: IconButton(
                     icon: Icon(Icons.add, color: Colors.white, size: widget.cardIconSize * 0.9),
-                    tooltip: 'Ajouter un caca',
+                    tooltip: 'Add poop',
                     onPressed: () {
                       showModalBottomSheet(
                         context: context,

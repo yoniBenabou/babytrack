@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -28,10 +25,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -58,6 +52,25 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyAjVR839EFF8AB56RPeBigRNf_t0XxxP2g',
+    appId: '1:482105615588:ios:a232a49c77aa58df3538f1',
+    messagingSenderId: '482105615588',
+    projectId: 'babytrack-3e123',
+    storageBucket: 'babytrack-3e123.firebasestorage.app',
+    iosBundleId: 'fr.yoni.babytrack',
+  );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyDFyQbtOKu3f9bd6mAL4axxoJ_yxnFgQq8',
+    appId: '1:482105615588:web:3d04a3cfed1e64c53538f1',
+    messagingSenderId: '482105615588',
+    projectId: 'babytrack-3e123',
+    storageBucket: 'babytrack-3e123.firebasestorage.app',
+    authDomain: 'babytrack-3e123.firebaseapp.com',
+    databaseURL: 'https://babytrack-3e123-default-rtdb.europe-west1.firebasedatabase.app',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyAjVR839EFF8AB56RPeBigRNf_t0XxxP2g',
     appId: '1:482105615588:ios:a232a49c77aa58df3538f1',
     messagingSenderId: '482105615588',

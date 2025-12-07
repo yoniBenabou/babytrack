@@ -60,11 +60,11 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Aucun bébé sélectionné', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text('No baby selected', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              const Text('Ajoutez un bébé pour commencer à suivre les biberons et soins.'),
+              const Text('Add a baby to start tracking bottles and care.'),
               const SizedBox(height: 16),
-              ElevatedButton.icon(onPressed: _openAddBaby, icon: const Icon(Icons.add), label: const Text('Ajouter un bébé'))
+              ElevatedButton.icon(onPressed: _openAddBaby, icon: const Icon(Icons.add), label: const Text('Add a baby'))
             ],
           ),
         ),

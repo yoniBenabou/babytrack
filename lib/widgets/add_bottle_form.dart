@@ -65,7 +65,7 @@ class _AddBottleFormState extends State<AddBottleForm> {
 
   void _submit() async {
     if (widget.selectedBebe.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Aucun bébé sélectionné')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No baby selected')));
       return;
     }
 
@@ -102,7 +102,7 @@ class _AddBottleFormState extends State<AddBottleForm> {
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de l\'ajout : $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error adding: $e')));
     }
   }
 
@@ -121,7 +121,7 @@ class _AddBottleFormState extends State<AddBottleForm> {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(height: 16),
-              Text('Choisis la quantité bue', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Choose the amount', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               SizedBox(height: 16),
               Text(
                 '${_amount.toInt()} ml',
@@ -147,7 +147,7 @@ class _AddBottleFormState extends State<AddBottleForm> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Date : ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('Date: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   TextButton.icon(
                     icon: Icon(Icons.calendar_today, color: Colors.blue),
                     label: Text(
@@ -173,7 +173,7 @@ class _AddBottleFormState extends State<AddBottleForm> {
                 ],
               ),
               SizedBox(height: 8),
-              Text('Sélectionne l\'heure', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('Select time', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
               CyclicHourMinutePicker(
                 initialHour: _selectedHour,
@@ -200,7 +200,7 @@ class _AddBottleFormState extends State<AddBottleForm> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Valider', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text('Save', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           ),

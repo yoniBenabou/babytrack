@@ -60,7 +60,7 @@ class _AddPoopFormState extends State<AddPoopForm> {
 
   void _submit() async {
     if (widget.selectedBebe.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Aucun bébé sélectionné')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No baby selected')));
       return;
     }
 
@@ -91,7 +91,7 @@ class _AddPoopFormState extends State<AddPoopForm> {
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de l\'ajout : $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error adding: $e')));
     }
   }
 
@@ -110,14 +110,14 @@ class _AddPoopFormState extends State<AddPoopForm> {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(height: 16),
-              Text('Ajouter une selle', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Add poop', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               SizedBox(height: 24),
 
               // Sélection de la date
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Date : ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('Date: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   TextButton.icon(
                     icon: Icon(Icons.calendar_today, color: Colors.brown),
                     label: Text(
@@ -134,7 +134,7 @@ class _AddPoopFormState extends State<AddPoopForm> {
               SizedBox(height: 8),
 
               // Sélection de l'heure
-              Text('Sélectionne l\'heure', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('Select time', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
               CyclicHourMinutePicker(
                 initialHour: _selectedHour,
@@ -156,9 +156,9 @@ class _AddPoopFormState extends State<AddPoopForm> {
                 height: 40,
                 child: TextField(
                   decoration: InputDecoration(
-                    labelText: 'Notes (optionnel)',
+                    labelText: 'Notes (optional)',
                     border: OutlineInputBorder(),
-                    hintText: 'Ajouter des remarques...',
+                    hintText: 'Add notes...',
                     labelStyle: TextStyle(fontSize: 14),
                   ),
                   style: TextStyle(fontSize: 14),
@@ -184,7 +184,7 @@ class _AddPoopFormState extends State<AddPoopForm> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Valider', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text('Save', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           ),

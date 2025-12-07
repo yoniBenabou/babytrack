@@ -114,7 +114,7 @@ class _EditPoopFormState extends State<EditPoopForm> {
        Navigator.of(context).pop(true);
      } catch (e) {
        if (!mounted) return;
-       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de l\'enregistrement : $e')));
+       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error saving: $e')));
      }
    }
 
@@ -133,12 +133,12 @@ class _EditPoopFormState extends State<EditPoopForm> {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(height: 16),
-              Text('Modifier la selle', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Edit poop', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Date : ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('Date: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   TextButton.icon(
                     icon: Icon(Icons.calendar_today, color: Colors.brown),
                     label: Text(
@@ -152,7 +152,7 @@ class _EditPoopFormState extends State<EditPoopForm> {
                 ],
               ),
               SizedBox(height: 8),
-              Text('Sélectionne l\'heure', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('Select time', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
               CyclicHourMinutePicker(
                 initialHour: _selectedHour,
@@ -171,9 +171,9 @@ class _EditPoopFormState extends State<EditPoopForm> {
                 height: 40,
                 child: TextField(
                   decoration: InputDecoration(
-                    labelText: 'Notes (optionnel)',
+                    labelText: 'Notes (optional)',
                     border: OutlineInputBorder(),
-                    hintText: 'Ajouter des remarques...',
+                    hintText: 'Add notes...',
                     labelStyle: TextStyle(fontSize: 14),
                   ),
                   style: TextStyle(fontSize: 14),
@@ -194,12 +194,12 @@ class _EditPoopFormState extends State<EditPoopForm> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Enregistrer', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text('Save', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
               SizedBox(height: 16),
               TextButton.icon(
                 icon: Icon(Icons.delete, color: Colors.white),
-                label: Text('Supprimer', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                label: Text('Delete', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 onPressed: () async {
                   try {
                     // Avant suppression, ajuster l'historique
@@ -224,7 +224,7 @@ class _EditPoopFormState extends State<EditPoopForm> {
                      Navigator.of(context).pop(true);
                    } catch (e) {
                      if (!mounted) return;
-                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de la suppression : $e')));
+                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error deleting: $e')));
                    }
                  },
                 style: TextButton.styleFrom(

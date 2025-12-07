@@ -160,7 +160,7 @@ class _EditBottleFormState extends State<EditBottleForm> {
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de l\'enregistrement : $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error saving: $e')));
     }
   }
 
@@ -179,13 +179,13 @@ class _EditBottleFormState extends State<EditBottleForm> {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(height: 16),
-              Text('Modifier la quantité bue', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Edit amount', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               SizedBox(height: 16),
               // Afficher la date en premier
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Date : ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('Date: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   TextButton.icon(
                     icon: Icon(Icons.calendar_today, color: Colors.blue),
                     label: Text(
@@ -200,7 +200,7 @@ class _EditBottleFormState extends State<EditBottleForm> {
               ),
               SizedBox(height: 8),
               // Puis l'heure
-              Text('Modifier l\'heure', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('Edit time', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
               CyclicHourMinutePicker(
                 initialHour: _selectedHour,
@@ -240,12 +240,12 @@ class _EditBottleFormState extends State<EditBottleForm> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Enregistrer', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text('Save', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
               SizedBox(height: 16),
               TextButton.icon(
                 icon: Icon(Icons.delete, color: Colors.white),
-                label: Text('Supprimer', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                label: Text('Delete', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 onPressed: () async {
                   try {
                     // Avant suppression, récupérer le document pour ajuster l'historique
@@ -276,7 +276,7 @@ class _EditBottleFormState extends State<EditBottleForm> {
                     Navigator.of(context).pop(true);
                   } catch (e) {
                     if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de la suppression : $e')));
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error deleting: $e')));
                   }
                 },
                 style: TextButton.styleFrom(

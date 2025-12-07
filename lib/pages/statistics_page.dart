@@ -9,7 +9,7 @@ class StatisticsPage extends StatelessWidget {
 
   const StatisticsPage({super.key, this.selectedBaby = '', this.onBabyAdded});
 
-  // Récupère les stats HistoryLogs pour les 7 derniers jours pour le bébé sélectionné
+  // Gets HistoryLogs stats for the last 7 days for the selected baby
   Future<Map<String, dynamic>> _getHistoryLast7Days() async {
     if (selectedBaby.isEmpty) {
       return {
@@ -40,8 +40,7 @@ class StatisticsPage extends StatelessWidget {
         final int dayTotalMl = (data != null && data['bottlesTotalQuantity'] != null) ? (data['bottlesTotalQuantity'] as num).toInt() : 0;
         final int dayCount = (data != null && data['bottlesCount'] != null) ? (data['bottlesCount'] as num).toInt() : 0;
         final int poops = (data != null && data['poopsCount'] != null) ? (data['poopsCount'] as num).toInt() : 0;
-        final int ironCount = (data != null && data['ironCount'] != null) ? (data['ironCount'] as num).toInt() : 0;
-        final int vitaminDCount = (data != null && data['vitaminDCount'] != null) ? (data['vitaminDCount'] as num).toInt() : 0;
+        final int vitaminsCount = (data != null && data['vitaminsCount'] != null) ? (data['vitaminsCount'] as num).toInt() : 0;
 
         totalQuantity += dayTotalMl;
         totalCount += dayCount;
@@ -51,18 +50,16 @@ class StatisticsPage extends StatelessWidget {
           'totalMl': dayTotalMl,
           'bottlesCount': dayCount,
           'poopsCount': poops,
-          'iron': ironCount > 0,
-          'vitaminD': vitaminDCount > 0,
+          'vitamins': vitaminsCount > 0,
         });
       } catch (e) {
-        // En cas d'erreur, considérer la journée comme vide
+        // On error, consider the day as empty
         days.add({
           'date': day,
           'totalMl': 0,
           'bottlesCount': 0,
           'poopsCount': 0,
-          'iron': false,
-          'vitaminD': false,
+          'vitamins': false,
         });
       }
     }
@@ -87,14 +84,14 @@ class StatisticsPage extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Aucun bébé sélectionné', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text('No baby selected', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              const Text('Sélectionnez ou créez un bébé pour voir les statistiques.'),
+              const Text('Select or create a baby to view statistics.'),
               const SizedBox(height: 16),
               ElevatedButton.icon(onPressed: () async {
                 final newId = await Navigator.of(context).push<String>(MaterialPageRoute(builder: (_) => const AddBabyPage()));
                 if (newId != null && newId.isNotEmpty) onBabyAdded?.call(newId);
-              }, icon: const Icon(Icons.add), label: const Text('Ajouter un bébé'))
+              }, icon: const Icon(Icons.add), label: const Text('Add a baby'))
             ],
           ),
         ),
@@ -114,7 +111,7 @@ class StatisticsPage extends StatelessWidget {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (!snapshot.hasData) {
-                  return const Center(child: Text('Aucune donnée pour les 7 derniers jours.'));
+                  return const Center(child: Text('No data for the last 7 days.'));
                 }
 
                 final data = snapshot.data!;
@@ -125,7 +122,7 @@ class StatisticsPage extends StatelessWidget {
 
                 return Column(
                   children: [
-                    // Carte résumé (une seule ligne)
+                    // Summary card (single line)
                     Card(
                       color: Colors.green.shade50,
                       elevation: 2,
@@ -141,7 +138,7 @@ class StatisticsPage extends StatelessWidget {
                                 TextSpan(
                                   children: [
                                     const TextSpan(
-                                      text: 'Moyenne par biberon (7j): ',
+                                      text: 'Avg per bottle (7d): ',
                                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                                     ),
                                     TextSpan(
@@ -149,7 +146,7 @@ class StatisticsPage extends StatelessWidget {
                                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green.shade700),
                                     ),
                                     TextSpan(
-                                      text: '  —  Total: $totalQty ml • $totalCount biberons',
+                                      text: '  —  Total: $totalQty ml • $totalCount bottles',
                                       style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
                                     ),
                                   ],
@@ -164,7 +161,7 @@ class StatisticsPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
 
-                    // Carte historique 7 jours
+                    // 7 days history card
                     Card(
                       color: Colors.blue.shade50,
                       elevation: 3,
@@ -174,17 +171,16 @@ class StatisticsPage extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Historique - 7 jours', style: TextStyle(fontWeight: FontWeight.bold, fontSize: cardFontSize)),
+                            Text('History - 7 days', style: TextStyle(fontWeight: FontWeight.bold, fontSize: cardFontSize)),
                             const SizedBox(height: 12),
                             Column(
                               children: List.generate(days.length, (i) {
                                 final day = days[i]['date'] as DateTime;
-                                final formattedDate = DateFormat('dd/MM').format(day);
+                                final formattedDate = DateFormat('MM/dd').format(day);
                                 final int totalMl = days[i]['totalMl'] as int;
                                 final int bottlesCount = days[i]['bottlesCount'] as int;
                                 final int poopsCount = days[i]['poopsCount'] as int;
-                                final bool iron = days[i]['iron'] as bool;
-                                final bool vitaminD = days[i]['vitaminD'] as bool;
+                                final bool vitamins = days[i]['vitamins'] as bool;
 
                                 return Container(
                                   margin: const EdgeInsets.symmetric(vertical: 2),
@@ -195,29 +191,26 @@ class StatisticsPage extends StatelessWidget {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      // Ligne 1: date • ml • nb biberons
+                                      // Line 1: date • ml • bottle count
                                       Row(
                                         children: [
                                           Text(formattedDate, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                                           const Spacer(),
                                           Text('$totalMl ml', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
                                           const SizedBox(width: 8),
-                                          Text('$bottlesCount biberons', style: TextStyle(fontSize: 24, color: Colors.grey.shade800)),
+                                          Text('$bottlesCount bottles', style: TextStyle(fontSize: 24, color: Colors.grey.shade800)),
                                         ],
                                       ),
                                       const SizedBox(height: 2),
-                                      // Ligne 2: nb selles + checks fer/vit D
+                                      // Line 2: poop count + vitamin check
                                       Row(
                                         children: [
-                                          Text('Selles: $poopsCount', style: TextStyle(fontSize: 20, color: Colors.brown.shade700, fontWeight: FontWeight.w600)),
+                                          Text('Poops: $poopsCount', style: TextStyle(fontSize: 20, color: Colors.brown.shade700, fontWeight: FontWeight.w600)),
                                           const Spacer(),
                                           Row(
                                             children: [
-                                              const Text('Fer: ',style: TextStyle(fontSize: 20)),
-                                              Icon(iron ? Icons.check_circle : Icons.cancel, size: 20, color: iron ? Colors.green : Colors.grey),
-                                              const SizedBox(width: 12),
-                                              const Text('Vit D: ',style: TextStyle(fontSize: 20)),
-                                              Icon(vitaminD ? Icons.check_circle : Icons.cancel, size: 20, color: vitaminD ? Colors.green : Colors.grey),
+                                              const Text('Vitamin: ', style: TextStyle(fontSize: 20)),
+                                              Icon(vitamins ? Icons.check_circle : Icons.cancel, size: 20, color: vitamins ? Colors.green : Colors.grey),
                                             ],
                                           ),
                                         ],

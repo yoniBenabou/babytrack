@@ -76,14 +76,14 @@ class _BottlesCardState extends State<BottlesCard> {
                           child: Text('🍼', style: TextStyle(fontSize: widget.cardIconSize * 0.9)),
                         ),
                         SizedBox(width: SizeConfig.text(context, 0.025)),
-                        Text('Derniers biberons', style: TextStyle(fontWeight: FontWeight.bold, fontSize: widget.cardFontSize)),
+                        Text('Last bottles', style: TextStyle(fontWeight: FontWeight.bold, fontSize: widget.cardFontSize)),
                         const Spacer(),
                         CircleAvatar(
                           backgroundColor: Colors.blue,
                           child: Center(
                             child: IconButton(
                               icon: Icon(Icons.add, color: Colors.white, size: widget.cardIconSize * 0.9),
-                              tooltip: 'Ajouter un biberon',
+                              tooltip: 'Add a bottle',
                               onPressed: () {
                                 showModalBottomSheet(
                                   context: context,
@@ -129,7 +129,7 @@ class _BottlesCardState extends State<BottlesCard> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Total journalier :', style: TextStyle(fontSize: widget.cardFontSize, fontWeight: FontWeight.bold)),
+                        Text('Daily total:', style: TextStyle(fontSize: widget.cardFontSize, fontWeight: FontWeight.bold)),
                         Text('$totalJournalier ml', style: TextStyle(fontSize: widget.cardFontSize, color: Colors.blue)),
                       ],
                     )
@@ -141,16 +141,6 @@ class _BottlesCardState extends State<BottlesCard> {
         );
       },
     );
-  }
-
-  DateTime _extractDate(Map<String, dynamic> doc) {
-    final date = doc['startedAt'];
-    if (date == null) return DateTime.now();
-    if (date is DateTime) return date;
-    try {
-      if (date.runtimeType.toString().contains('Timestamp')) return (date as dynamic).toDate();
-    } catch (_) {}
-    return DateTime.now();
   }
 
   String _formatDate(dynamic date) {
