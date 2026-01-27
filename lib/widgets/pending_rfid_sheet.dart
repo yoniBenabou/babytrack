@@ -22,14 +22,38 @@ class PendingRfidSheet extends StatefulWidget {
 class _PendingRfidSheetState extends State<PendingRfidSheet> {
   // Track selected baby for each RFID
   final Map<String, String?> _selectedBabyForRfid = {};
+  
+  // Track expanded state for config section
+  final Map<String, bool> _expandedConfig = {};
+  
+  // Config values per RFID
+  final Map<String, double> _idealTempMin = {};
+  final Map<String, double> _idealTempMax = {};
+  final Map<String, int> _ldrThreshold = {};
 
   String? get _currentUserId => FirebaseAuth.instance.currentUser?.uid;
+
+  void _initConfigForRfid(String rfidUuid) {
+    _idealTempMin[rfidUuid] ??= 35.0;
+    _idealTempMax[rfidUuid] ??= 40.0;
+    _ldrThreshold[rfidUuid] ??= 500;
+  }
 
   Future<void> _claimRfid(String rfidUuid, String babyId) async {
     final userId = _currentUserId;
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('You must be logged in')),
+      );
+      return;
+    }
+
+    // Validate temperature range
+    final tempMin = _idealTempMin[rfidUuid] ?? 35.0;
+    final tempMax = _idealTempMax[rfidUuid] ?? 40.0;
+    if (tempMin >= tempMax) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Min temperature must be less than max')),
       );
       return;
     }
@@ -43,13 +67,19 @@ class _PendingRfidSheetState extends State<PendingRfidSheet> {
         'status': 'mapped',
         'mappedAt': FieldValue.serverTimestamp(),
         'mappedByUserId': userId,
+        // Config fields
+        'idealTempMin': tempMin,
+        'idealTempMax': tempMax,
+        'ldrThreshold': _ldrThreshold[rfidUuid] ?? 500,
+        'needsCalibration': true,  // ESP will calibrate bottle on first scan
       });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('RFID linked to ${widget.babyNames[babyId] ?? babyId}'),
+            content: Text('RFID linked to ${widget.babyNames[babyId] ?? babyId}. Place empty bottle on scale to calibrate.'),
             backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -232,42 +262,202 @@ class _PendingRfidSheetState extends State<PendingRfidSheet> {
                                   style: TextStyle(color: Colors.red.shade400),
                                 )
                               else
-                                Row(
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Expanded(
-                                      child: DropdownButtonFormField<String>(
-                                        value: _selectedBabyForRfid[rfidUuid],
-                                        decoration: const InputDecoration(
-                                          labelText: 'Link to baby',
-                                          border: OutlineInputBorder(),
-                                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: DropdownButtonFormField<String>(
+                                            value: _selectedBabyForRfid[rfidUuid],
+                                            decoration: const InputDecoration(
+                                              labelText: 'Link to baby',
+                                              border: OutlineInputBorder(),
+                                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                            ),
+                                            items: widget.babyIds.map((id) {
+                                              return DropdownMenuItem<String>(
+                                                value: id,
+                                                child: Text(widget.babyNames[id] ?? id),
+                                              );
+                                            }).toList(),
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _selectedBabyForRfid[rfidUuid] = value;
+                                                if (value != null) {
+                                                  _initConfigForRfid(rfidUuid);
+                                                }
+                                              });
+                                            },
+                                          ),
                                         ),
-                                        items: widget.babyIds.map((id) {
-                                          return DropdownMenuItem<String>(
-                                            value: id,
-                                            child: Text(widget.babyNames[id] ?? id),
-                                          );
-                                        }).toList(),
-                                        onChanged: (value) {
+                                      ],
+                                    ),
+                                    
+                                    // Show config options when baby is selected
+                                    if (_selectedBabyForRfid[rfidUuid] != null) ...[
+                                      const SizedBox(height: 12),
+                                      
+                                      // Expandable config section
+                                      InkWell(
+                                        onTap: () {
                                           setState(() {
-                                            _selectedBabyForRfid[rfidUuid] = value;
+                                            _expandedConfig[rfidUuid] = !(_expandedConfig[rfidUuid] ?? false);
                                           });
                                         },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.shade100,
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.tune, size: 18, color: Colors.grey.shade600),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                'Configuration',
+                                                style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+                                              ),
+                                              const Spacer(),
+                                              Icon(
+                                                _expandedConfig[rfidUuid] == true
+                                                    ? Icons.expand_less
+                                                    : Icons.expand_more,
+                                                color: Colors.grey.shade600,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    ElevatedButton.icon(
-                                      onPressed: _selectedBabyForRfid[rfidUuid] != null
-                                          ? () => _claimRfid(rfidUuid, _selectedBabyForRfid[rfidUuid]!)
-                                          : null,
-                                      icon: const Icon(Icons.link, size: 18),
-                                      label: const Text('Link'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.blue,
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      
+                                      if (_expandedConfig[rfidUuid] == true) ...[
+                                        const SizedBox(height: 12),
+                                        
+                                        // Temperature config
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.orange.shade50,
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Icon(Icons.thermostat, size: 16, color: Colors.orange.shade700),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    'Ideal Temperature',
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 13,
+                                                      color: Colors.orange.shade800,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Column(
+                                                      children: [
+                                                        Text(
+                                                          'Min: ${(_idealTempMin[rfidUuid] ?? 35.0).toStringAsFixed(0)}°C',
+                                                          style: TextStyle(fontSize: 12, color: Colors.blue.shade700),
+                                                        ),
+                                                        Slider(
+                                                          value: _idealTempMin[rfidUuid] ?? 35.0,
+                                                          min: 20,
+                                                          max: 45,
+                                                          divisions: 25,
+                                                          activeColor: Colors.blue,
+                                                          onChanged: (v) => setState(() => _idealTempMin[rfidUuid] = v),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Column(
+                                                      children: [
+                                                        Text(
+                                                          'Max: ${(_idealTempMax[rfidUuid] ?? 40.0).toStringAsFixed(0)}°C',
+                                                          style: TextStyle(fontSize: 12, color: Colors.red.shade700),
+                                                        ),
+                                                        Slider(
+                                                          value: _idealTempMax[rfidUuid] ?? 40.0,
+                                                          min: 25,
+                                                          max: 50,
+                                                          divisions: 25,
+                                                          activeColor: Colors.red,
+                                                          onChanged: (v) => setState(() => _idealTempMax[rfidUuid] = v),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        
+                                        // LDR config
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.purple.shade50,
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Icon(Icons.nightlight, size: 16, color: Colors.purple.shade700),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    'Night Light: ${_ldrThreshold[rfidUuid] ?? 500}',
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 13,
+                                                      color: Colors.purple.shade800,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Slider(
+                                                value: (_ldrThreshold[rfidUuid] ?? 500).toDouble(),
+                                                min: 100,
+                                                max: 1000,
+                                                divisions: 18,
+                                                activeColor: Colors.purple,
+                                                onChanged: (v) => setState(() => _ldrThreshold[rfidUuid] = v.toInt()),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                      
+                                      const SizedBox(height: 12),
+                                      
+                                      // Link button
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton.icon(
+                                          onPressed: () => _claimRfid(rfidUuid, _selectedBabyForRfid[rfidUuid]!),
+                                          icon: const Icon(Icons.link, size: 18),
+                                          label: const Text('Link RFID'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.blue,
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ],
                                 ),
                             ],

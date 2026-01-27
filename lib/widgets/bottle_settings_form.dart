@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
+import 'rfid_config_form.dart';
 
 class BottleSettingsForm extends StatefulWidget {
   const BottleSettingsForm({super.key});
@@ -177,6 +178,31 @@ class _RfidManagementSection extends StatelessWidget {
       return 'Unknown';
     }
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  Future<void> _openConfig(BuildContext context, String rfidUuid, String babyId, Map<String, dynamic> data) async {
+    // Get baby name
+    String babyName = babyId;
+    try {
+      final babyDoc = await FirebaseFirestore.instance.collection('Babies').doc(babyId).get();
+      if (babyDoc.exists) {
+        babyName = babyDoc.get('firstName') ?? babyId;
+      }
+    } catch (_) {}
+
+    if (!context.mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => RfidConfigForm(
+        rfidUuid: rfidUuid,
+        babyId: babyId,
+        babyName: babyName,
+        initialConfig: data,
+      ),
+    );
   }
 
   Future<void> _unlinkRfid(BuildContext context, String rfidUuid) async {
@@ -375,12 +401,18 @@ class _RfidManagementSection extends StatelessWidget {
                           ],
                         ),
                       ),
-                      if (isMapped)
+                      if (isMapped) ...[
+                        IconButton(
+                          icon: Icon(Icons.settings, color: Colors.blue.shade400, size: 20),
+                          tooltip: 'Configure',
+                          onPressed: () => _openConfig(context, rfidUuid, babyId, data),
+                        ),
                         IconButton(
                           icon: Icon(Icons.link_off, color: Colors.red.shade400, size: 20),
                           tooltip: 'Unlink',
                           onPressed: () => _unlinkRfid(context, rfidUuid),
                         ),
+                      ],
                     ],
                   ),
                 );
